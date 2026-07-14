@@ -1,9 +1,9 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { getDashboardApiV1DashboardGet } from '@/generated/api';
-import { DashboardResponse, DashboardViewModel } from '../types';
+import { DashboardViewModel } from '../types';
 import { mapDashboardResponseToViewModel } from '../mappers/dashboardMapper';
 import { useSession } from '@/features/auth/hooks/useAuth';
-import { BootstrapResponse } from '@/shared/bootstrap/types';
+import { BootstrapResponse, DashboardResponse } from '@/generated/models';
 
 export const useDashboardQuery = () => {
     const session = useSession();

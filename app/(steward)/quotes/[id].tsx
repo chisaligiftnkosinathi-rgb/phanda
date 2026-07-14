@@ -5,7 +5,7 @@ import { ActivityIndicator, Alert, ScrollView, StyleSheet, Text, TouchableOpacit
 import { API_BASE_URL } from '@/config/api';
 import { useSession } from '@/features/auth';
 import * as FileSystem from 'expo-file-system';
-import { supabase } from '@/api/supabase';
+import { supabase } from '@/lib/supabase/client';
 import { useQuoteDetail, useSendQuote, useAcceptQuote, useConvertToInvoice } from '@/features/quote';
 
 export default function QuoteDetailScreen() {

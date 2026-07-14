@@ -1,6 +1,6 @@
 import { decode } from 'base64-arraybuffer';
 import * as FileSystem from 'expo-file-system/legacy';
-import { supabase } from './supabase';
+import { supabase } from '@/lib/supabase/client';
 
 export const uploadWorkProof = async (uid: string, jobId: string, fileUri: string, fileName: string): Promise<string> => {
     try {

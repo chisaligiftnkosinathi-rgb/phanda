@@ -1,6 +1,6 @@
 import { IdentityProvider } from "@axionyx/ports";
 import { BillingPolicy } from "@axionyx/contracts";
-import { supabase } from "../../api/supabase";
+import { supabase } from '@/lib/supabase/client';
 import { apiClient } from "../../api/client";
 
 export class PhandaIdentityProvider implements IdentityProvider {

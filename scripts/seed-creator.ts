@@ -1,4 +1,4 @@
-import { supabase } from '../src/api/supabase';
+import { supabase } from '../src/lib/supabase/client';
 import { ENV } from '../src/config/env';
 
 // For execution outside of Expo, we ensure env variables are loaded

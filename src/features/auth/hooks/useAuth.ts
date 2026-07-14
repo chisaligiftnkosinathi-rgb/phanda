@@ -2,8 +2,8 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '../store/useAuthStore';
 import { UserLogin, UserCreate } from '@/generated/models';
 import { useBootstrapQuery } from '@/shared/bootstrap/useBootstrap';
-import { supabase } from '@/shared/api/supabase';
-import { SessionContext } from '../types';
+import { supabase } from '@/lib/supabase/client';
+import { SessionContext, Business, Permission, FeatureFlag, NavigationItem, PlatformRole } from '../types';
 
 export const useAuth = () => {
   const queryClient = useQueryClient();
@@ -71,7 +71,7 @@ export const useSession = (): SessionContext => {
   const { data: bootstrap, isLoading, error } = useBootstrapQuery();
 
   const identity = isAuthenticated && bootstrap?.identity ? bootstrap.identity : null;
-  const businesses = isAuthenticated && bootstrap?.businesses ? bootstrap.businesses : [];
+  const businesses = isAuthenticated && bootstrap?.businesses ? (bootstrap.businesses as unknown as Business[]) : [];
   
   // Resolve the selected business
   let selectedBusiness = businesses.find(b => b.id === selectedBusinessId) || null;
@@ -79,14 +79,14 @@ export const useSession = (): SessionContext => {
       selectedBusiness = businesses[0];
   }
 
-  const permissions = isAuthenticated ? (bootstrap?.permissions || []) : [];
-  const featureFlags = isAuthenticated ? (bootstrap?.featureFlags || []) : [];
-  const navigation = isAuthenticated ? (bootstrap?.navigation || []) : [];
-  const platformRole = isAuthenticated && bootstrap?.platformRole ? bootstrap.platformRole : "guest";
+  const permissions = isAuthenticated ? (bootstrap?.permissions as unknown as Permission[] || []) : [];
+  const featureFlags = isAuthenticated ? (bootstrap?.featureFlags as unknown as FeatureFlag[] || []) : [];
+  const navigation = isAuthenticated ? (bootstrap?.navigation as unknown as NavigationItem[] || []) : [];
+  const platformRole = isAuthenticated && bootstrap?.platformRole ? (bootstrap.platformRole as unknown as PlatformRole) : "guest";
   const dashboardSnapshot = isAuthenticated && bootstrap?.dashboard ? bootstrap.dashboard : null;
 
   const can = (resource: string, action: string) => {
-      return permissions.some(p => p.resource === resource && p.action === action);
+      return permissions.some((p: any) => p === `${resource}:${action}` || (p.resource === resource && p.action === action));
   };
 
   const switchBusiness = (id: string) => {

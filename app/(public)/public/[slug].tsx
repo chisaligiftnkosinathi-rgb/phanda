@@ -235,7 +235,7 @@ export default function BusinessProfileScreen() {
     const [submitStatus, setSubmitStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
     const [submitError, setSubmitError] = useState('');
 
-    const { data: profile, isLoading: loading, isError, error } = usePublicProfile(
+    const { data: rawProfile, isLoading: loading, isError, error } = usePublicProfile(
         slug as string,
         {
             query: {
@@ -247,25 +247,27 @@ export default function BusinessProfileScreen() {
                     provider_type: clean(d.provider_type),
                     business_line: clean(d.business_line),
                     short_bio: clean(d.short_bio),
-                    location_string: clean(d.location) ?? clean(d.operating_area),
-                    operating_area: clean(d.operating_area),
+                    location_string: clean(d.canonical_name) ?? clean(d.address_label) ?? clean(d.operating_area),
+                    operating_area: clean(d.operating_area as any),
                     address_label: clean(d.address_label),
                     province: clean(d.province),
                     city: clean(d.city),
                     suburb: clean(d.suburb),
                     service_radius_km: d.service_radius_km ?? null,
                     service_area_notes: clean(d.service_area_notes),
-                    whatsapp_number: clean(d.whatsapp_number) ?? clean(d.phone),
-                    availability: clean(d.availability),
+                    whatsapp_number: clean(d.whatsapp_number) ?? clean(d.phone as any),
+                    availability: clean(d.availability as any),
                     cover_photo_url: clean(d.cover_photo_url),
                     logo_url: clean(d.logo_url),
                     proof_items: parseProofOfWorkItems(d.proof_of_work_items, d.supporting_image_urls),
                     services: parseServices(d.services),
-                    created_at: d.created_at ?? null,
+                    created_at: d.created_at as any ?? null,
                 }) as BusinessProfile
             }
         }
     );
+
+    const profile = rawProfile as unknown as BusinessProfile | undefined;
 
     const createLeadMutation = useSubmitLead();
 

@@ -30,6 +30,7 @@ import type {
   BodyUploadMediaApiV1UploadPost,
   BodyUploadPaymentReceiptApiV1PaymentsIntentsPaymentIdReceiptUploadPost,
   BodyUploadSaleEvidenceForQuoteRequestApiV1QuoteRequestsQuoteRequestIdUploadSaleEvidencePost,
+  BootstrapResponse,
   CampaignCreate,
   CampaignOut,
   CampaignUpdate,
@@ -780,6 +781,98 @@ export function useGetDashboardApiV1DashboardGet<TData = Awaited<ReturnType<type
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getGetDashboardApiV1DashboardGetQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+
+/**
+ * @summary Get Bootstrap
+ */
+export const getBootstrapApiV1BootstrapGet = (
+    
+ options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<BootstrapResponse>(
+      {url: `/api/v1/bootstrap`, method: 'GET', signal
+    },
+      options);
+    }
+  
+
+
+
+export const getGetBootstrapApiV1BootstrapGetQueryKey = () => {
+    return [
+    `/api/v1/bootstrap`
+    ] as const;
+    }
+
+    
+export const getGetBootstrapApiV1BootstrapGetQueryOptions = <TData = Awaited<ReturnType<typeof getBootstrapApiV1BootstrapGet>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBootstrapApiV1BootstrapGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetBootstrapApiV1BootstrapGetQueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getBootstrapApiV1BootstrapGet>>> = ({ signal }) => getBootstrapApiV1BootstrapGet(requestOptions, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getBootstrapApiV1BootstrapGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetBootstrapApiV1BootstrapGetQueryResult = NonNullable<Awaited<ReturnType<typeof getBootstrapApiV1BootstrapGet>>>
+export type GetBootstrapApiV1BootstrapGetQueryError = unknown
+
+
+export function useGetBootstrapApiV1BootstrapGet<TData = Awaited<ReturnType<typeof getBootstrapApiV1BootstrapGet>>, TError = unknown>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBootstrapApiV1BootstrapGet>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getBootstrapApiV1BootstrapGet>>,
+          TError,
+          Awaited<ReturnType<typeof getBootstrapApiV1BootstrapGet>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetBootstrapApiV1BootstrapGet<TData = Awaited<ReturnType<typeof getBootstrapApiV1BootstrapGet>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBootstrapApiV1BootstrapGet>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getBootstrapApiV1BootstrapGet>>,
+          TError,
+          Awaited<ReturnType<typeof getBootstrapApiV1BootstrapGet>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetBootstrapApiV1BootstrapGet<TData = Awaited<ReturnType<typeof getBootstrapApiV1BootstrapGet>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBootstrapApiV1BootstrapGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get Bootstrap
+ */
+
+export function useGetBootstrapApiV1BootstrapGet<TData = Awaited<ReturnType<typeof getBootstrapApiV1BootstrapGet>>, TError = unknown>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBootstrapApiV1BootstrapGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetBootstrapApiV1BootstrapGetQueryOptions(options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 

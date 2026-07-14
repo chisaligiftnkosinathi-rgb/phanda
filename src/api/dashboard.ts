@@ -105,9 +105,8 @@ export interface DashboardResponse {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-/** Returns true if section loaded successfully with data */
-export function sectionOk<T>(section: DashboardSection<T>): section is DashboardSection<T> & { data: T } {
-    return section.status === 'ok' && section.data !== null;
+export function sectionOk<T>(section?: DashboardSection<T>): section is DashboardSection<T> & { data: T } {
+    return !!section && section.status === 'ok' && section.data !== null;
 }
 
 /** Returns true if overall dashboard is fully healthy */

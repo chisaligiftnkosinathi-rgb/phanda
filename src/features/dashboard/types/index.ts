@@ -49,7 +49,7 @@ export interface DashboardViewModel {
 }
 
 // Minimal DTO interfaces representing the expected /api/v1/dashboard payload
-export interface DashboardResponse {
+export interface LegacyDashboardResponse {
     trust?: TrustWidgetData;
     wallet?: WalletWidgetData;
     work?: WorkWidgetData;

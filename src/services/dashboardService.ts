@@ -47,7 +47,10 @@ function mapGlobalErrorToState(err: any): { state: WidgetState; message: string 
     return { state: 'unavailable', message: err instanceof Error ? err.message : 'Unknown error' };
 }
 
-function resolveSectionState<T>(section: DashboardSection<T>): { state: WidgetState; message: string | null } {
+function resolveSectionState<T>(section?: DashboardSection<T>): { state: WidgetState; message: string | null } {
+    if (!section) {
+        return { state: 'unavailable', message: 'Section unavailable' };
+    }
     if (section.status === 'ok') {
         return { state: 'live', message: null };
     }
@@ -59,7 +62,7 @@ function resolveSectionState<T>(section: DashboardSection<T>): { state: WidgetSt
 
 // ─── Section normalizers ──────────────────────────────────────────────────────
 
-function normalizeMerchant(section: DashboardSection<any>): DashboardWidget<MerchantInfo> {
+function normalizeMerchant(section?: DashboardSection<any>): DashboardWidget<MerchantInfo> {
     const { state, message } = resolveSectionState(section);
     
     if (sectionOk(section)) {
@@ -80,7 +83,7 @@ function normalizeMerchant(section: DashboardSection<any>): DashboardWidget<Merc
     return { state, message, data: null };
 }
 
-function normalizeTrust(section: DashboardSection<any>): DashboardWidget<TrustInfo> {
+function normalizeTrust(section?: DashboardSection<any>): DashboardWidget<TrustInfo> {
     const { state, message } = resolveSectionState(section);
 
     if (sectionOk(section)) {
@@ -122,7 +125,7 @@ function normalizeTrust(section: DashboardSection<any>): DashboardWidget<TrustIn
     return { state, message, data: null };
 }
 
-function normalizeWallet(section: DashboardSection<any>): DashboardWidget<WalletInfo> {
+function normalizeWallet(section?: DashboardSection<any>): DashboardWidget<WalletInfo> {
     const { state, message } = resolveSectionState(section);
 
     if (sectionOk(section)) {
@@ -143,7 +146,7 @@ function normalizeWallet(section: DashboardSection<any>): DashboardWidget<Wallet
     return { state, message, data: null };
 }
 
-function normalizeOpportunities(section: DashboardSection<any>): DashboardWidget<OpportunityInfo> {
+function normalizeOpportunities(section?: DashboardSection<any>): DashboardWidget<OpportunityInfo> {
     const { state, message } = resolveSectionState(section);
 
     if (sectionOk(section)) {
@@ -163,7 +166,7 @@ function normalizeOpportunities(section: DashboardSection<any>): DashboardWidget
     return { state, message, data: null };
 }
 
-function normalizeNotifications(section: DashboardSection<any>): DashboardWidget<NotificationInfo> {
+function normalizeNotifications(section?: DashboardSection<any>): DashboardWidget<NotificationInfo> {
     const { state, message } = resolveSectionState(section);
 
     if (sectionOk(section)) {
@@ -183,7 +186,7 @@ function normalizeNotifications(section: DashboardSection<any>): DashboardWidget
     return { state, message, data: null };
 }
 
-function normalizeSystemHealth(section: DashboardSection<any>, timestamp: string): DashboardWidget<SystemStatus> {
+function normalizeSystemHealth(section: DashboardSection<any> | undefined, timestamp: string): DashboardWidget<SystemStatus> {
     const { state, message } = resolveSectionState(section);
 
     if (sectionOk(section)) {
@@ -207,15 +210,15 @@ function normalizeSystemHealth(section: DashboardSection<any>, timestamp: string
 
 // ─── Public API ───────────────────────────────────────────────────────────────
 
-export function normalizeDashboardResponse(response: DashboardResponse): DashboardData {
+export function normalizeDashboardResponse(response: Partial<DashboardResponse> | undefined): DashboardData {
     return {
-        merchant:      normalizeMerchant(response.merchant),
-        trust:         normalizeTrust(response.trust),
-        wallet:        normalizeWallet(response.wallet),
-        opportunities: normalizeOpportunities(response.opportunities),
-        notifications: normalizeNotifications(response.notifications),
-        systemHealth:  normalizeSystemHealth(response.platform, response.timestamp),
-        timestamp:     response.timestamp,
+        merchant:      normalizeMerchant(response?.merchant),
+        trust:         normalizeTrust(response?.trust),
+        wallet:        normalizeWallet(response?.wallet),
+        opportunities: normalizeOpportunities(response?.opportunities),
+        notifications: normalizeNotifications(response?.notifications),
+        systemHealth:  normalizeSystemHealth(response?.platform, response?.timestamp ?? new Date().toISOString()),
+        timestamp:     response?.timestamp ?? new Date().toISOString(),
     };
 }
 

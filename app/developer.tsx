@@ -3,7 +3,7 @@ import { StyleSheet, Text, View, ScrollView, TouchableOpacity, ActivityIndicator
 import { useRouter } from 'expo-router';
 import { useQueryClient } from '@tanstack/react-query';
 import { useSession } from '@/features/auth';
-import { supabase } from '@/shared/api/supabase';
+import { supabase } from '@/lib/supabase/client';
 
 interface DiagnosticState {
     health: '🟢 Healthy' | '🟡 Loading' | '🔴 Failed' | 'N/A';

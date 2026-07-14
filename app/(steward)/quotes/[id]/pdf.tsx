@@ -3,7 +3,7 @@ import * as Sharing from 'expo-sharing';
 import * as FileSystem from 'expo-file-system';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { supabase } from '@/api/supabase';
+import { supabase } from '@/lib/supabase/client';
 import { API_BASE_URL } from '@/config/api';
 
 export default function QuotePDFScreen() {

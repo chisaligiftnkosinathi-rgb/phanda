@@ -1,7 +1,7 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useAuth, useSession } from '@/features/auth/hooks/useAuth';
-import { supabase } from '../api/supabase';
+import { supabase } from '@/lib/supabase/client';
 
 export default function VerifyEmailScreen() {
     const { email } = useLocalSearchParams<{ email: string }>();
