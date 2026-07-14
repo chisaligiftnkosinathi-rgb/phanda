@@ -24,7 +24,7 @@ export function useActionStream(profileId?: string) {
     }, [profileId]);
 
     const emitFeedback = (eventType: string, action: any) => {
-        const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || "http://localhost:8000";
+        const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL || "http://localhost:8000";
         fetch(`${API_BASE_URL}/api/v1/feedback/events`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
