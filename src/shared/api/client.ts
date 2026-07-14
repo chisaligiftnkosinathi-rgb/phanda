@@ -3,8 +3,8 @@ import { ENV } from '../config/env';
 import { storage } from '../utils/storage';
 import { setupAuthInterceptor } from './authInterceptor';
 
-const rawBase = ENV.API_BASE_URL || 'https://iphande-production.up.railway.app/api/v1';
-const normalizedBase = rawBase.endsWith('/') ? rawBase : rawBase + '/';
+const rawBase = ENV.API_BASE_URL || 'https://iphande-production.up.railway.app';
+const normalizedBase = rawBase.endsWith('/') ? rawBase.slice(0, -1) : rawBase;
 
 export const AXIOS_INSTANCE = axios.create({
   baseURL: normalizedBase,

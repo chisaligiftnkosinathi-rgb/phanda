@@ -7,7 +7,7 @@ import { supabase } from '@/lib/supabase/client';
 const RAW_API_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
 
 export const API_BASE_URL =
-    RAW_API_URL ?? 'https://iphande-production.up.railway.app/api/v1';
+    RAW_API_URL ?? 'https://iphande-production.up.railway.app';
 
 if (!RAW_API_URL) {
     console.warn(
