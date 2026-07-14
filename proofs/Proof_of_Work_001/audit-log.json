@@ -1,0 +1,13 @@
+[
+  {
+    "eventId": "877200b9-40fb-45ef-aee2-663992e8d10a",
+    "traceId": "06a0500e-6994-4ad8-99b1-597374102f5a",
+    "correlationId": "c2d944a6-f5a4-444c-8059-f7eee2c8544d",
+    "sourceLayer": "Domain (Phanda)",
+    "domain": "phanda",
+    "action": "OPPORTUNITY_CREATED",
+    "actorId": "54f25ebc-1ce1-4d60-869d-d60154a221f6",
+    "targetResource": "opportunity:dcd3c020-c346-4d06-9116-21ddb0438dff",
+    "timestamp": "2026-07-01 06:45:44"
+  }
+]

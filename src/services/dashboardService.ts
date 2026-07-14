@@ -1,22 +1,20 @@
 /**
  * Dashboard Service
  *
- * Orchestrates all API calls needed for the dashboard.
- * Decouples the presentation layer from API complexity.
+ * Single source of truth for dashboard data.
  *
- * Later: Replace all individual API calls with single
- *   GET /api/v1/dashboard
- * and this service won't change.
+ * Architecture:
+ *   ONE request → GET /api/v1/dashboard
+ *   ONE response → DashboardResponse (backend envelope)
+ *   ONE normalizer → DashboardData (UI view model)
  */
 
-import { dashboardApi } from '@/api/dashboard';
-import { merchantApi } from '@/api/merchant';
-import { notificationsApi } from '@/api/notifications';
-import { trustApi } from '@/api/trust';
-
+import { dashboardApi, sectionOk } from '@/api/dashboard';
+import type { DashboardResponse, DashboardSection } from '@/api/dashboard';
 import type {
     DashboardData,
-    DashboardErrorState,
+    DashboardWidget,
+    WidgetState,
     MerchantInfo,
     NotificationInfo,
     OpportunityInfo,
@@ -25,270 +23,228 @@ import type {
     WalletInfo,
 } from '@/types/dashboard';
 
-/**
- * Fetch merchant business info
- */
-async function fetchMerchantInfo(): Promise<{ data: MerchantInfo | null; error?: string }> {
-    try {
-        const account = await merchantApi.getAccount();
-        return {
-            data: {
-                id: account.id,
-                account_holder_name: account.account_holder_name,
-                verification_status: account.verification_status,
-                payout_enabled: account.payout_enabled,
-                created_at: account.created_at,
-            },
-        };
-    } catch (error) {
-        return {
-            data: null,
-            error: error instanceof Error ? error.message : 'Failed to load merchant info',
-        };
-    }
-}
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
-/**
- * Fetch trust score and visibility
- */
-async function fetchTrustInfo(): Promise<{ data: TrustInfo | null; error?: string }> {
-    try {
-        const [score, visibility] = await Promise.all([
-            trustApi.getTrustScore(),
-            trustApi.getVisibilityStatus(),
-        ]);
-
-        return {
-            data: {
-                score,
-                visibility,
-                verification_required: score.overall_score < 50,
-            },
-        };
-    } catch (error) {
-        return {
-            data: null,
-            error: error instanceof Error ? error.message : 'Failed to load trust info',
-        };
-    }
-}
-
-/**
- * Fetch wallet summary
- */
-async function fetchWalletInfo(): Promise<{ data: WalletInfo | null; error?: string }> {
-    try {
-        const dashboard = await dashboardApi.get();
-        const wallet = dashboard.wallet;
-        if (wallet.status !== 'ok' || !wallet.data) {
-            return { data: null, error: wallet.error ?? 'Wallet unavailable' };
+function mapGlobalErrorToState(err: any): { state: WidgetState; message: string } {
+    if (err?.response) {
+        const status = err.response.status;
+        switch (status) {
+            case 401: return { state: 'sessionExpired', message: 'Please sign in again' };
+            case 403: return { state: 'forbidden', message: "You don't have permission" };
+            case 404: return { state: 'unavailable', message: 'Not available' };
+            case 409: return { state: 'conflict', message: 'Refresh required' };
+            case 429: return { state: 'throttled', message: 'Too many requests' };
+            case 500: return { state: 'platformError', message: 'Temporary platform error' };
+            case 503: return { state: 'maintenance', message: 'Platform under maintenance' };
         }
-        return {
-            data: {
-                pending_amount: wallet.data.pending_amount,
-                available_amount: wallet.data.available_amount,
-                paid_amount: wallet.data.paid_amount,
-                currency: wallet.data.currency,
-                last_updated: wallet.data.last_updated,
-            },
-        };
-    } catch (error) {
-        return {
-            data: null,
-            error: error instanceof Error ? error.message : 'Failed to load wallet info',
-        };
     }
+    
+    // Check if network error (offline)
+    if (err?.message === 'Network Error' || err?.message?.includes('Network') || err?.isAxiosError && !err.response) {
+        return { state: 'offline', message: 'Showing last available snapshot' };
+    }
+
+    return { state: 'unavailable', message: err instanceof Error ? err.message : 'Unknown error' };
 }
 
-/**
- * Fetch current opportunities and job status
- * (Mock data for now - Chunk 6 will implement full opportunity flow)
- */
-async function fetchOpportunityInfo(): Promise<{ data: OpportunityInfo | null; error?: string }> {
-    try {
-        // Placeholder - will be connected in Chunk 6
-        return {
-            data: {
-                total_available: 0,
-                active_jobs: 0,
-                pending_proof_count: 0,
-                completed_today: 0,
-            },
-        };
-    } catch (error) {
-        return {
-            data: null,
-            error: error instanceof Error ? error.message : 'Failed to load opportunities',
-        };
+function resolveSectionState<T>(section: DashboardSection<T>): { state: WidgetState; message: string | null } {
+    if (section.status === 'ok') {
+        return { state: 'live', message: null };
     }
+    if (section.status === 'loading') {
+        return { state: 'loading', message: 'Preparing data' };
+    }
+    return { state: 'unavailable', message: section.error ?? 'Not available' };
 }
 
-/**
- * Fetch notifications summary
- */
-async function fetchNotificationInfo(): Promise<{ data: NotificationInfo | null; error?: string }> {
-    try {
-        const [notifications, unreadCount] = await Promise.all([
-            notificationsApi.getNotifications({ limit: 5, read: false }),
-            notificationsApi.getUnreadCount(),
-        ]);
+// ─── Section normalizers ──────────────────────────────────────────────────────
 
-        const recent = notifications.notifications || [];
-        const has_payment = recent.some((n) => n.type === 'payment_received');
-        const has_proof = recent.some((n) => n.type === 'proof_needed');
-
+function normalizeMerchant(section: DashboardSection<any>): DashboardWidget<MerchantInfo> {
+    const { state, message } = resolveSectionState(section);
+    
+    if (sectionOk(section)) {
+        const d = section.data;
         return {
+            state,
+            message,
             data: {
-                total_unread: unreadCount.unread_count || 0,
-                recent,
-                has_unread_payment: has_payment,
-                has_unread_proof: has_proof,
+                id: d.id,
+                account_holder_name: d.account_holder_name,
+                verification_status: d.verification_status,
+                payout_enabled: d.payout_enabled,
+                created_at: d.created_at,
             },
         };
-    } catch (error) {
-        return {
-            data: null,
-            error: error instanceof Error ? error.message : 'Failed to load notifications',
-        };
     }
+
+    return { state, message, data: null };
 }
 
-/**
- * Fetch system health status
- */
-async function fetchSystemStatus(): Promise<{ data: SystemStatus | null; error?: string }> {
-    try {
-        const health = await (analyticsApi as any).healthCheck?.();
+function normalizeTrust(section: DashboardSection<any>): DashboardWidget<TrustInfo> {
+    const { state, message } = resolveSectionState(section);
+
+    if (sectionOk(section)) {
+        const d = section.data;
+        const score = d.score;
+        const vis = d.visibility;
 
         return {
+            state,
+            message,
             data: {
-                status: health?.status || 'online',
-                api_healthy: health?.api_healthy ?? true,
-                last_sync: new Date().toISOString(),
+                score: {
+                    user_id: 'me',
+                    overall_score: score.overall_score,
+                    verification_score: score.identity_score ?? 0,
+                    completion_score: score.opportunity_completion_rate ?? 0,
+                    visibility_score: score.visibility_score ?? 0,
+                    components: {
+                        verified_profile: (score.identity_score ?? 0) > 0,
+                        verified_merchant_account: (score.economic_score ?? 0) > 0,
+                        successful_payments: score.work_proof_count ?? 0,
+                        successful_proofs: score.work_proof_count ?? 0,
+                        on_time_completion_rate: score.opportunity_completion_rate ?? 0,
+                    },
+                    calculated_at: new Date().toISOString(),
+                },
+                visibility: {
+                    user_id: 'me',
+                    is_visible: vis.is_verified ?? false,
+                    visibility_reason: vis.visibility_state ?? 'Not yet verified',
+                    trust_level: 'new',
+                    visibility_percentage: vis.visibility_score ?? 0,
+                },
+                verification_required: !(vis.is_verified ?? false),
+            },
+        };
+    }
+
+    return { state, message, data: null };
+}
+
+function normalizeWallet(section: DashboardSection<any>): DashboardWidget<WalletInfo> {
+    const { state, message } = resolveSectionState(section);
+
+    if (sectionOk(section)) {
+        const d = section.data;
+        return {
+            state,
+            message,
+            data: {
+                pending_amount: d.pending_amount,
+                available_amount: d.available_amount,
+                paid_amount: d.paid_amount,
+                currency: d.currency,
+                last_updated: d.last_updated,
+            },
+        };
+    }
+
+    return { state, message, data: null };
+}
+
+function normalizeOpportunities(section: DashboardSection<any>): DashboardWidget<OpportunityInfo> {
+    const { state, message } = resolveSectionState(section);
+
+    if (sectionOk(section)) {
+        const d = section.data;
+        return {
+            state,
+            message,
+            data: {
+                total_available: d.total_available,
+                active_jobs: d.active_jobs,
+                pending_proof_count: d.pending_proof_count,
+                completed_today: d.completed_today,
+            },
+        };
+    }
+
+    return { state, message, data: null };
+}
+
+function normalizeNotifications(section: DashboardSection<any>): DashboardWidget<NotificationInfo> {
+    const { state, message } = resolveSectionState(section);
+
+    if (sectionOk(section)) {
+        const d = section.data;
+        return {
+            state,
+            message,
+            data: {
+                total_unread: d.total_unread,
+                recent: [],
+                has_unread_payment: d.has_unread_payment,
+                has_unread_proof: d.has_unread_proof,
+            },
+        };
+    }
+
+    return { state, message, data: null };
+}
+
+function normalizeSystemHealth(section: DashboardSection<any>, timestamp: string): DashboardWidget<SystemStatus> {
+    const { state, message } = resolveSectionState(section);
+
+    if (sectionOk(section)) {
+        const d = section.data;
+        const statusStr: SystemStatus['status'] = d.maintenance ? 'degraded' : d.api_healthy ? 'online' : 'offline';
+        return {
+            state,
+            message,
+            data: {
+                status: statusStr,
+                api_healthy: d.api_healthy,
+                last_sync: timestamp,
                 pending_sync_count: 0,
                 sync_in_progress: false,
             },
         };
-    } catch (error) {
+    }
+
+    return { state, message, data: null };
+}
+
+// ─── Public API ───────────────────────────────────────────────────────────────
+
+export function normalizeDashboardResponse(response: DashboardResponse): DashboardData {
+    return {
+        merchant:      normalizeMerchant(response.merchant),
+        trust:         normalizeTrust(response.trust),
+        wallet:        normalizeWallet(response.wallet),
+        opportunities: normalizeOpportunities(response.opportunities),
+        notifications: normalizeNotifications(response.notifications),
+        systemHealth:  normalizeSystemHealth(response.platform, response.timestamp),
+        timestamp:     response.timestamp,
+    };
+}
+
+export async function fetchDashboardData(): Promise<DashboardData> {
+    try {
+        const response = await dashboardApi.get();
+
         return {
-            data: null,
-            error: error instanceof Error ? error.message : 'Health check failed',
+            merchant:      normalizeMerchant(response.merchant),
+            trust:         normalizeTrust(response.trust),
+            wallet:        normalizeWallet(response.wallet),
+            opportunities: normalizeOpportunities(response.opportunities),
+            notifications: normalizeNotifications(response.notifications),
+            systemHealth:  normalizeSystemHealth(response.platform, response.timestamp),
+            timestamp:     response.timestamp,
+        };
+    } catch (err) {
+        // Map global failure to all sections
+        const { state, message } = mapGlobalErrorToState(err);
+        const fallbackWidget: DashboardWidget<any> = { state, message, data: null };
+        
+        return {
+            merchant: fallbackWidget,
+            trust: fallbackWidget,
+            wallet: fallbackWidget,
+            opportunities: fallbackWidget,
+            notifications: fallbackWidget,
+            systemHealth: fallbackWidget,
+            timestamp: new Date().toISOString(),
         };
     }
 }
-
-/**
- * Assemble complete dashboard snapshot
- *
- * Fetches all required data in parallel.
- * Each piece's error does not prevent others from loading.
- *
- * @returns Complete DashboardData or null if no data available
- * @returns errors DashboardErrorState with per-section error messages
- */
-export async function fetchDashboardData(): Promise<{
-    data: DashboardData | null;
-    errors: DashboardErrorState;
-}> {
-    // Fetch all sections in parallel
-    const [merchantResult, trustResult, walletResult, opportunityResult, notificationResult, healthResult] =
-        await Promise.all([
-            fetchMerchantInfo(),
-            fetchTrustInfo(),
-            fetchWalletInfo(),
-            fetchOpportunityInfo(),
-            fetchNotificationInfo(),
-            fetchSystemStatus(),
-        ]);
-
-    // Build error state
-    const errors: DashboardErrorState = {};
-    if (merchantResult.error) errors.merchant = merchantResult.error;
-    if (trustResult.error) errors.trust = trustResult.error;
-    if (walletResult.error) errors.wallet = walletResult.error;
-    if (opportunityResult.error) errors.opportunities = opportunityResult.error;
-    if (notificationResult.error) errors.notifications = notificationResult.error;
-    if (healthResult.error) errors.systemHealth = healthResult.error;
-
-    // Require at least some data to return a dashboard
-    const hasAnyData =
-        merchantResult.data ||
-        trustResult.data ||
-        walletResult.data ||
-        opportunityResult.data ||
-        notificationResult.data;
-
-    if (!hasAnyData) {
-        return { data: null, errors };
-    }
-
-    // Assemble dashboard with fallbacks for missing sections
-    const dashboard: DashboardData = {
-        merchant: merchantResult.data || {
-            id: 'unknown',
-            account_holder_name: 'Your Business',
-            verification_status: 'unverified',
-            payout_enabled: false,
-            created_at: new Date().toISOString(),
-        },
-        trust: trustResult.data || {
-            score: {
-                user_id: 'unknown',
-                overall_score: 0,
-                verification_score: 0,
-                completion_score: 0,
-                visibility_score: 0,
-                components: {
-                    verified_profile: false,
-                    verified_merchant_account: false,
-                    successful_payments: 0,
-                    successful_proofs: 0,
-                    on_time_completion_rate: 0,
-                },
-                calculated_at: new Date().toISOString(),
-            },
-            visibility: {
-                user_id: 'unknown',
-                is_visible: false,
-                visibility_reason: 'Account not verified',
-                trust_level: 'new',
-                visibility_percentage: 0,
-            },
-            verification_required: true,
-        },
-        wallet: walletResult.data || {
-            pending_amount: '0.00',
-            available_amount: '0.00',
-            paid_amount: '0.00',
-            currency: 'ZAR',
-            last_updated: new Date().toISOString(),
-        },
-        opportunities: opportunityResult.data || {
-            total_available: 0,
-            active_jobs: 0,
-            pending_proof_count: 0,
-            completed_today: 0,
-        },
-        notifications: notificationResult.data || {
-            total_unread: 0,
-            recent: [],
-            has_unread_payment: false,
-            has_unread_proof: false,
-        },
-        systemHealth: healthResult.data || {
-            status: 'degraded',
-            api_healthy: false,
-            last_sync: new Date().toISOString(),
-            pending_sync_count: 0,
-            sync_in_progress: false,
-        },
-        timestamp: new Date().toISOString(),
-    };
-
-    return { data: dashboard, errors };
-}
-
-// Placeholder for analytics API (will be imported when available)
-const analyticsApi = {
-    healthCheck: () => Promise.resolve({ status: 'online', api_healthy: true }),
-};

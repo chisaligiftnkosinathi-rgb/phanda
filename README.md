@@ -1,56 +1,62 @@
-# Welcome to your Expo app 👋
+# iPhande Mobile OS
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+iPhande is a mobile platform built using React Native and Expo, designed to empower local business owners ("stewards") by providing them with tools for client interaction, opportunity identification, lead management, and instant, professional quote generation.
 
-## Get started
+The mobile client is connected to a live Railway-backed REST API and utilizes Supabase for secure authentication and cloud storage.
 
-1. Install dependencies
+---
 
-   ```bash
-   npm install
-   ```
+## 🚀 Getting Started
 
-2. Start the app
+### 1. Prerequisite Setup
+Ensure you have Node.js (v18+) and npm installed.
 
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
+### 2. Configure Environment
+Copy the env template to `.env` in the root of the project:
 ```bash
-npm run reset-project
+cp .env.example .env
+```
+Fill in the correct values for your environment. For testing against the live staging environment, obtain the Railway API base URL and Supabase Anon keys.
+
+### 3. Install Dependencies
+```bash
+npm install
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+### 4. Run metro bundler
+```bash
+npx expo start -c
+```
+Press `w` to open in your web browser, or connect via an Android emulator or iOS simulator.
 
-### Other setup steps
+---
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+## 🛠 Useful Commands
 
-## Learn more
+- **Start Bundler**: `npx expo start -c`
+- **TypeScript Gate Check**: `npx tsc --noEmit`
+- **Lint Code**: `npm run lint` (or `npx expo lint`)
+- **Run Architectural Audit**: `python scripts/audit_architecture.py`
 
-To learn more about developing your project with Expo, look at the following resources:
+---
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+## 📐 Architecture & Governance
 
-## Join the community
+The project strictly follows a **clean architecture** model that separates raw backend DTO data from the frontend UI views.
 
-Join our community of developers creating universal apps.
+For complete documentation:
+- 📖 [**Architecture Guide**](file:///C:/Projects/phanda/ARCHITECTURE.md): Explains the directory structures, Feature Module Grammar, DTO Isolation, and Aggregate vs View Model separation.
+- 📜 [**Platform Constitution**](file:///C:/Projects/phanda/governance-architecture/PLATFORM_CONSTITUTION.md): The normative ruleset governing feature design, code structure, and cache boundaries.
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+---
+
+## 🟢 Current Project Status (v1.0.0-connected)
+
+The **iPhande v1 Connected & Stabilized** milestone has been achieved. The following core engines are fully completed, connected to the backend API, and strictly audited:
+
+1. **Authentication Engine**: Sign-in, sign-up, session persistence, dynamic tokens, and secure auth state management.
+2. **Business Engine**: Profile management, category matching, service radius, and operating area updates.
+3. **Dashboard Engine**: Aggregates business state to display trust levels, client wallet sizes, and active jobs.
+4. **Opportunity Engine**: Create, edit, publish, and explore public/private local work opportunities.
+5. **Lead Engine**: Capture public customer requests and advance them through the inbox pipeline.
+6. **Quote Engine**: Professional quote generator (estimate labour, materials, travel cost, and VAT) with direct conversion to invoices.

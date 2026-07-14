@@ -1,0 +1,18 @@
+[
+  {
+    "eventId": "EV-100",
+    "traceId": "06a0500e-6994-4ad8-99b1-597374102f5a",
+    "timestamp": "2026-07-01T12:00:00.000Z",
+    "action": "USER_LOGIN",
+    "actorId": "USR-001",
+    "targetResource": "sys"
+  },
+  {
+    "eventId": "EV-101",
+    "traceId": "06a0500e-6994-4ad8-99b1-597374102f5a",
+    "timestamp": "2026-07-01T12:05:00.000Z",
+    "action": "OPPORTUNITY_CREATED",
+    "actorId": "USR-001",
+    "targetResource": "ORG-001"
+  }
+]

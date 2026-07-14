@@ -1,0 +1,20 @@
+application:
+  name: <AppName>
+  version: 1.0.0
+
+governance:
+  architectureVersion: 1.0.0
+  constitutionVersion: 1.0.0
+
+identity:
+  provider: iphande
+  contract: Identity_Contract_v1.0.0
+
+audit:
+  enabled: true
+
+trace:
+  enabled: true
+
+compliance:
+  status: compliant

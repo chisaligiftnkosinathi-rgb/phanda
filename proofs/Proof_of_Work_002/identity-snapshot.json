@@ -1,0 +1,20 @@
+{
+  "users": [
+    {
+      "id": "USR-001",
+      "email": "gift@example.com",
+      "memberships": [
+        {
+          "organizationId": "ORG-001",
+          "role": "Founder",
+          "permissions": [
+            {
+              "action": "manage",
+              "resource": "organization"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

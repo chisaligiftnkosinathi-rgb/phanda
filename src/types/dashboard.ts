@@ -72,55 +72,39 @@ export interface SystemStatus {
   sync_in_progress: boolean;
 }
 
+export type WidgetState =
+  | "snapshot"
+  | "loading"
+  | "live"
+  | "refreshing"
+  | "maintenance"
+  | "unavailable"
+  | "offline"
+  | "sessionExpired"
+  | "forbidden"
+  | "conflict"
+  | "throttled"
+  | "platformError";
+
+export interface DashboardWidget<T> {
+  state: WidgetState;
+  message: string | null;
+  data: T | null;
+}
+
 /**
  * Complete dashboard snapshot
  *
  * Single unified payload representing the entire business state.
- * Later replaceable with single backend endpoint:
- *   GET /api/v1/dashboard
+ * Driven by GET /api/v1/dashboard
  */
 export interface DashboardData {
-  merchant: MerchantInfo;
-  trust: TrustInfo;
-  wallet: WalletInfo;
-  opportunities: OpportunityInfo;
-  notifications: NotificationInfo;
-  systemHealth: SystemStatus;
+  merchant: DashboardWidget<MerchantInfo>;
+  trust: DashboardWidget<TrustInfo>;
+  wallet: DashboardWidget<WalletInfo>;
+  opportunities: DashboardWidget<OpportunityInfo>;
+  notifications: DashboardWidget<NotificationInfo>;
+  systemHealth: DashboardWidget<SystemStatus>;
   timestamp: string; // When snapshot was captured
 }
 
-/**
- * Dashboard loading state
- */
-export interface DashboardLoadingState {
-  merchant: boolean;
-  trust: boolean;
-  wallet: boolean;
-  opportunities: boolean;
-  notifications: boolean;
-  systemHealth: boolean;
-}
-
-/**
- * Dashboard error state
- */
-export interface DashboardErrorState {
-  merchant?: string;
-  trust?: string;
-  wallet?: string;
-  opportunities?: string;
-  notifications?: string;
-  systemHealth?: string;
-}
-
-/**
- * Complete dashboard hook response
- */
-export interface UseDashboardReturn {
-  data: DashboardData | null;
-  loading: DashboardLoadingState;
-  errors: DashboardErrorState;
-  refetch: () => Promise<void>;
-  isRefetching: boolean;
-  lastRefetch: string | null;
-}

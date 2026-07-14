@@ -1,0 +1,62 @@
+{
+  "verdict": "COHERENT",
+  "metrics": {
+    "evidenceCompleteness": 100,
+    "governanceCompliance": 100,
+    "logicalConsistency": 100,
+    "determinismScore": 100
+  },
+  "supportingProof": [
+    {
+      "ruleId": "RULE-AUTH-001",
+      "factId": "EV-100",
+      "outcome": "PASS",
+      "assertions": [
+        {
+          "assertionType": "ActorExists",
+          "outcome": "PASS"
+        },
+        {
+          "assertionType": "ContextFrameResolved",
+          "outcome": "PASS"
+        },
+        {
+          "assertionType": "NoDuplicateFacts",
+          "outcome": "PASS"
+        }
+      ]
+    },
+    {
+      "ruleId": "RULE-ORG-001",
+      "factId": "EV-101",
+      "outcome": "PASS",
+      "assertions": [
+        {
+          "assertionType": "ActorExists",
+          "outcome": "PASS"
+        },
+        {
+          "assertionType": "TraceExists",
+          "outcome": "PASS"
+        },
+        {
+          "assertionType": "ContextFrameResolved",
+          "outcome": "PASS"
+        },
+        {
+          "assertionType": "ActorHasPermission",
+          "outcome": "PASS"
+        },
+        {
+          "assertionType": "RequiredAntecedent",
+          "outcome": "PASS"
+        },
+        {
+          "assertionType": "ChronologyValid",
+          "outcome": "PASS"
+        }
+      ]
+    }
+  ],
+  "anomalies": []
+}

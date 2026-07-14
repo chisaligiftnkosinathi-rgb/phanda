@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "CommonJS",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "outDir": "./dist-proof",
+    "resolveJsonModule": true
+  },
+  "include": [
+    "scripts/execute-proof-002.ts",
+    "applications/axionyx/**/*.ts"
+  ]
+}

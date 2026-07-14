@@ -31,7 +31,10 @@ yarn-error.*
 *.pem
 
 # local env files
+.env
 .env*.local
+.env.production
+.env.development
 
 # typescript
 *.tsbuildinfo
@@ -41,3 +44,12 @@ example
 # generated native folders
 /ios
 /android
+
+# Scratch files and temporary scripts
+fix*.py
+fix*.js
+find_zustand.py
+update.py
+GEMINI.md
+TODO.md
+*.txt

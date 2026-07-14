@@ -1,0 +1,80 @@
+{
+  "knowledgeSetVersion": "1.0.0",
+  "ontologyVersion": "1.0.0",
+  "assertionLibrary": [
+    {
+      "assertionId": "ASSERT-EVID-001",
+      "type": "ActorExists",
+      "evaluator": "actor-exists",
+      "version": "1.0.0",
+      "family": "EVIDENCE"
+    },
+    {
+      "assertionId": "ASSERT-EVID-002",
+      "type": "TraceExists",
+      "evaluator": "trace-exists",
+      "version": "1.0.0",
+      "family": "EVIDENCE"
+    },
+    {
+      "assertionId": "ASSERT-EVID-003",
+      "type": "ContextFrameResolved",
+      "evaluator": "context-frame-resolved",
+      "version": "1.0.0",
+      "family": "EVIDENCE"
+    },
+    {
+      "assertionId": "ASSERT-GOV-001",
+      "type": "RequiredAntecedent",
+      "evaluator": "required-antecedent",
+      "version": "1.0.0",
+      "family": "GOVERNANCE"
+    },
+    {
+      "assertionId": "ASSERT-GOV-002",
+      "type": "ActorHasPermission",
+      "evaluator": "actor-has-permission",
+      "version": "1.0.0",
+      "family": "GOVERNANCE"
+    },
+    {
+      "assertionId": "ASSERT-CONS-001",
+      "type": "ChronologyValid",
+      "evaluator": "chronology-valid",
+      "version": "1.0.0",
+      "family": "CONSISTENCY"
+    },
+    {
+      "assertionId": "ASSERT-CONS-002",
+      "type": "NoDuplicateFacts",
+      "evaluator": "no-duplicate-facts",
+      "version": "1.0.0",
+      "family": "CONSISTENCY"
+    }
+  ],
+  "ruleSet": [
+    {
+      "ruleId": "RULE-AUTH-001",
+      "action": "USER_LOGIN",
+      "version": "1.0.0",
+      "assertions": [
+        { "assertionId": "ASSERT-EVID-001" },
+        { "assertionId": "ASSERT-EVID-003" },
+        { "assertionId": "ASSERT-CONS-002" }
+      ]
+    },
+    {
+      "ruleId": "RULE-ORG-001",
+      "action": "OPPORTUNITY_CREATED",
+      "version": "1.0.0",
+      "assertions": [
+        { "assertionId": "ASSERT-EVID-001" },
+        { "assertionId": "ASSERT-EVID-002" },
+        { "assertionId": "ASSERT-EVID-003" },
+        { "assertionId": "ASSERT-GOV-002", "params": { "action": "manage", "resource": "organization" } },
+        { "assertionId": "ASSERT-GOV-001", "params": { "action": "USER_LOGIN" } },
+        { "assertionId": "ASSERT-CONS-001" }
+      ]
+    }
+  ]
+}

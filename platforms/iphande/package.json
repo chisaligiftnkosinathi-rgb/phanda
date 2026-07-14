@@ -1,0 +1,36 @@
+{
+  "name": "iphande",
+  "version": "1.0.0",
+  "description": "iPhande Shared Identity & Trust Platform",
+  "main": "dist/index.js",
+  "scripts": {
+    "start": "ts-node-dev src/index.ts",
+    "build": "tsc",
+    "test-auth": "ts-node scripts/test-auth.ts"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "better-sqlite3": "^12.11.1",
+    "cors": "^2.8.6",
+    "dotenv": "^16.6.1",
+    "express": "^4.22.2",
+    "jsonwebtoken": "^9.0.3",
+    "uuid": "^14.0.1"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^4.17.25",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^20.19.43",
+    "@types/uuid": "^10.0.0",
+    "ts-node": "^10.9.2",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.9.3"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs"
+}

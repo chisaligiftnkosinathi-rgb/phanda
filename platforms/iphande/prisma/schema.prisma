@@ -1,0 +1,41 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ----------------------------------------------------------------------------
+// GOVERNED VALUES (Since SQLite lacks enums, we enforce these at the app level)
+// EntityStatus: ACTIVE, SUSPENDED, DISABLED, PENDING, ARCHIVED
+// ----------------------------------------------------------------------------
+
+model AuthUser {
+  id               String   @id @default(uuid())
+  email            String   @unique
+  passwordHash     String
+  emailVerified    Boolean  @default(false)
+  mfaEnabled       Boolean  @default(false)
+  credentialStatus String   @default("ACTIVE")
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  
+  person           Person?
+}
+
+model Person {
+  id             String   @id @default(uuid())
+  authUserId     String   @unique
+  authUser       AuthUser @relation(fields: [authUserId], references: [id])
+  preferredName  String
+  legalName      String?
+  contactDetails String?
+  status         String   @default("ACTIVE")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}

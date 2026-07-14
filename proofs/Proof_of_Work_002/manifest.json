@@ -1,0 +1,13 @@
+{
+  "proofId": "Proof_of_Work_002",
+  "governanceVersion": "1.0.0",
+  "ontologyVersion": "1.0.0",
+  "knowledgeSetVersion": "1.0.0",
+  "traceId": "06a0500e-6994-4ad8-99b1-597374102f5a",
+  "generatedAt": "2026-07-01T22:20:22.971Z",
+  "evidence": [
+    "audit-log.json",
+    "identity-snapshot.json",
+    "trust-evidence.json"
+  ]
+}

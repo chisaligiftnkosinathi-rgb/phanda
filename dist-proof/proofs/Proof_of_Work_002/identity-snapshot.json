@@ -1,0 +1,28 @@
+{
+  "timestamp": "2026-07-01T12:00:00.000Z",
+  "persons": [
+    {
+      "personId": "USR-001",
+      "authUserId": "AUTH-001"
+    }
+  ],
+  "memberships": [
+    {
+      "personId": "USR-001",
+      "organizationId": "ORG-001",
+      "roleId": "ROLE-FOUNDER",
+      "validFrom": "2026-01-01T00:00:00Z"
+    }
+  ],
+  "roles": [
+    {
+      "roleId": "ROLE-FOUNDER",
+      "permissions": [
+        {
+          "action": "manage",
+          "resource": "organization"
+        }
+      ]
+    }
+  ]
+}
