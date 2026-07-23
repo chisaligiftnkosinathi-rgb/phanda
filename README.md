@@ -1,3 +1,22 @@
+# Phanda Platform
+
+## Purpose
+Applied community/business platform.
+
+## Role in the Institute
+Consumes AXIONYX principles (identity concepts, continuity models, visibility architecture) but does **not** control AXIONYX scientific systems.
+
+## Dependency Direction
+```text
+AXIONYX Principles
+        ↓
+      Phanda
+        ↓
+Businesses / Users
+```
+
+---
+
 # iPhande Mobile OS
 
 iPhande is a mobile platform built using React Native and Expo, designed to empower local business owners ("stewards") by providing them with tools for client interaction, opportunity identification, lead management, and instant, professional quote generation.

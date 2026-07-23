@@ -11,8 +11,19 @@ import type { BootstrapResponseSelectedBusinessId } from './bootstrapResponseSel
 import type { BootstrapResponseDashboard } from './bootstrapResponseDashboard';
 import type { SystemSchema } from './systemSchema';
 
+import type { ApplicationState } from './applicationState';
+import type { SetupState } from './setupState';
+import type { SubscriptionState } from './subscriptionState';
+import type { WorkspaceSchema } from './workspaceSchema';
+
 export interface BootstrapResponse {
+  session?: unknown;
   identity: IdentitySchema;
+  business?: unknown;
+  application: ApplicationState;
+  setup: SetupState;
+  subscription: SubscriptionState;
+  workspace?: WorkspaceSchema;
   businesses: BusinessSchema[];
   selectedBusinessId: BootstrapResponseSelectedBusinessId;
   permissions: string[];

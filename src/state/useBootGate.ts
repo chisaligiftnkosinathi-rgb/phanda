@@ -2,60 +2,65 @@
  * Boot Convergence Gate
  *
  * Ordered convergence:
- *   1. Auth resolves → identity truth is established
- *   2. Kernel completes first tick AFTER auth is ready → computation truth is valid
- *   3. systemReady = true → splash releases → router renders
- *
- * The kernel is NOT allowed to declare itself ready before auth resolves.
- * This prevents "valid computation on invalid identity state" (cold-start desync).
- *
- * Usage (read):
- *   const systemReady = useBootGate(state => state.systemReady);
- *
- * Usage (write — from subsystems only, never from UI):
- *   useBootGate.getState().setAuthReady(true);
- *   useBootGate.getState().setKernelReady(true);
+ *   1. App Launch (APP_STARTED)
+ *   2. Handshake (HANDSHAKE_COMPLETED / HANDSHAKE_FAILED)
+ *   3. Auth Hydration (AUTH_HYDRATED)
+ *   4. Session Validated (SESSION_VALIDATED)
+ *   5. Bootstrap (BOOTSTRAP_COMPLETED)
+ *   6. Ready (READY)
  */
 
 import { create } from 'zustand';
 
+export type BootPhase = 
+  | 'APP_STARTED'
+  | 'HANDSHAKE_COMPLETED'
+  | 'HANDSHAKE_FAILED'
+  | 'AUTH_HYDRATED'
+  | 'SESSION_VALIDATED'
+  | 'BOOTSTRAP_COMPLETED'
+  | 'READY';
+
 type BootState = {
+  phase: BootPhase;
+  apiReachable: boolean | null;
   authReady: boolean;
-  kernelReady: boolean;
   systemReady: boolean;
-  // Timestamps for Boot Ledger Trace — observability without side effects
-  authReadyAt: number | null;
-  kernelReadyAt: number | null;
-  systemReadyAt: number | null;
+  
+  // Observability Ledger
+  events: { phase: BootPhase; timestamp: number }[];
+
+  setPhase: (phase: BootPhase) => void;
+  setApiReachable: (v: boolean) => void;
   setAuthReady: (v: boolean) => void;
-  setKernelReady: (v: boolean) => void;
 };
 
 export const useBootGate = create<BootState>((set, get) => ({
+  phase: 'APP_STARTED',
+  apiReachable: null,
   authReady: false,
-  kernelReady: false,
   systemReady: false,
-  authReadyAt: null,
-  kernelReadyAt: null,
-  systemReadyAt: null,
+  events: [{ phase: 'APP_STARTED', timestamp: Date.now() }],
 
-  setAuthReady: (v: boolean) => {
-    const now = Date.now();
-    set({ authReady: v, authReadyAt: now });
-    // If kernel already completed a tick (and was waiting for auth), converge now
-    if (v && get().kernelReady) {
-      set({ systemReady: true, systemReadyAt: now });
-    }
+  setPhase: (phase: BootPhase) => {
+    set((state) => ({
+      phase,
+      events: [...state.events, { phase, timestamp: Date.now() }]
+    }));
   },
 
-  setKernelReady: (v: boolean) => {
-    const now = Date.now();
-    set({ kernelReady: v, kernelReadyAt: now });
-    // Kernel ready is only meaningful AFTER auth is established
-    if (v && get().authReady) {
-      set({ systemReady: true, systemReadyAt: now });
+  setApiReachable: (v: boolean) => {
+    set({ apiReachable: v });
+    get().setPhase(v ? 'HANDSHAKE_COMPLETED' : 'HANDSHAKE_FAILED');
+  },
+
+  setAuthReady: (v: boolean) => {
+    set({ authReady: v });
+    if (v) {
+      get().setPhase('AUTH_HYDRATED');
+      // Auth is the only requirement now that kernel is on backend
+      set({ systemReady: true });
+      get().setPhase('READY');
     }
-    // If authReady is false here, systemReady stays false.
-    // The kernel keeps ticking — scheduler will retry on next tick.
   },
 }));

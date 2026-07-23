@@ -26,4 +26,10 @@ export interface MediaStore {
    * Lists all media paths in the store, used for Garbage Collection.
    */
   listAll(): Promise<string[]>;
+
+  /**
+   * Returns the byte size of the file at the given URI.
+   * Implementations use platform-appropriate APIs (FileSystem on Expo, fs.stat on Node).
+   */
+  getFileSize(uri: string): Promise<number>;
 }

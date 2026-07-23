@@ -2,7 +2,8 @@ import { opportunityApi, OpportunityFilters } from '../api/opportunityApi';
 import { OpportunityOut, OpportunityCreate } from '../types/opportunity';
 import { Permission } from '@/features/auth/types';
 import { TrustPermissionEngine } from './guards/permissionEngine';
-import { ShadowExecutor } from '../adapters/shadow/ShadowExecutor';
+// ShadowExecutor removed — shadow comparison is a server-side concern (FastAPI middleware).
+// The mobile app only receives the final response from the API.
 
 // UI-specific domain model for the Feed
 export interface UIOpportunity {
@@ -23,39 +24,13 @@ export interface UIOpportunity {
 
 export class OpportunityService {
   static async getOpportunities(filters?: OpportunityFilters): Promise<UIOpportunity[]> {
-    return ShadowExecutor.execute({
-      capability: "Opportunity Matching",
-      request: filters || {},
-      legacyHandler: async () => {
-        try {
-          const rawData = await opportunityApi.fetchOpportunities(filters);
-          return this.normalizeFeedList(rawData);
-        } catch (error) {
-          console.error('[OpportunityService] getOpportunities failed:', error);
-          throw new Error('Could not fetch opportunities. Please try again later.');
-        }
-      },
-      evidenceFactory: (legacyResult) => ({
-        id: `evi_match_${Date.now()}`,
-        sourceId: "phanda_opportunity_search",
-        timestamp: new Date().toISOString(),
-        payload: { filters },
-        signatures: ["shadow-mode", "opportunity-matching"]
-      }),
-      newRuntimeHandler: (truth, ops) => {
-        // Mock new runtime implementation of opportunity matching based on TruthAssertion
-        // In a real scenario, this would map the `ops` from Phanda back to UIOpportunity[]
-        return []; 
-      },
-      comparator: (legacy: UIOpportunity[], newRuntime: UIOpportunity[]) => {
-        // Normalized comparison for opportunity matching
-        // Instead of raw arrays, map to a sorted list of unique IDs and scores
-        const legacySet = legacy.map(op => `${op.id}:${op.feed_score}`).sort().join(",");
-        const newSet = newRuntime.map(op => `${op.id}:${op.feed_score}`).sort().join(",");
-        
-        return legacySet === newSet ? "MATCH" : "DIVERGED";
-      }
-    });
+    try {
+      const rawData = await opportunityApi.fetchOpportunities(filters);
+      return this.normalizeFeedList(rawData);
+    } catch (error) {
+      console.error('[OpportunityService] getOpportunities failed:', error);
+      throw new Error('Could not fetch opportunities. Please try again later.');
+    }
   }
 
   static async getOpportunityById(id: string): Promise<UIOpportunity> {

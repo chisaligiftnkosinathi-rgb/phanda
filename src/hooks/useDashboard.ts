@@ -14,12 +14,12 @@ import { useSession } from '@/features/auth/hooks/useAuth';
 import type { DashboardData } from '@/types/dashboard';
 
 export function useDashboard() {
-    const { authenticated, dashboardSnapshot } = useSession();
+    const { authenticated, identity, dashboardSnapshot } = useSession();
 
     const query = useQuery({
         queryKey: ['dashboard'],
         queryFn: fetchDashboardData,
-        enabled: authenticated,
+        enabled: authenticated && !!identity,
         placeholderData: () => {
             if (dashboardSnapshot) {
                 return normalizeDashboardResponse(dashboardSnapshot);

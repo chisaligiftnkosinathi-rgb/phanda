@@ -1,0 +1,12 @@
+cff-version: 1.2.0
+title: "phanda"
+message: "If you use this software or data, please cite it as below."
+type: software
+authors:
+  - family-names: Chisali
+    given-names: Gift
+institution: AXIONYX Research Institute
+publisher: Global IT and Business Solutions (Pty) Ltd
+version: 1.0.0
+date-released: 2026-07-15
+url: "https://axionyx.co.za"

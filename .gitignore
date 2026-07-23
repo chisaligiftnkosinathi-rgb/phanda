@@ -53,3 +53,10 @@ update.py
 GEMINI.md
 TODO.md
 *.txt
+.env
+.env.*
+*.pem
+*.key
+*serviceAccountKey*.json
+*firebase_service_account*.json
+database_dump*.sql

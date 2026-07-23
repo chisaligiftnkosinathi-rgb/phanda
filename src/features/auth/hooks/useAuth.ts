@@ -4,6 +4,7 @@ import { UserLogin, UserCreate } from '@/generated/models';
 import { useBootstrapQuery } from '@/shared/bootstrap/useBootstrap';
 import { supabase } from '@/lib/supabase/client';
 import { SessionContext, Business, Permission, FeatureFlag, NavigationItem, PlatformRole } from '../types';
+import { useBootGate } from '@/state/useBootGate';
 
 export const useAuth = () => {
   const queryClient = useQueryClient();
@@ -62,13 +63,15 @@ export const useAuth = () => {
 };
 
 export const useSession = (): SessionContext => {
-  const { accessToken, isHydrated, selectedBusinessId, setSelectedBusinessId } = useAuthStore();
+  const { sessionState, isHydrated, selectedBusinessId, setSelectedBusinessId } = useAuthStore();
+  const apiReachable = useBootGate((state) => state.apiReachable);
   const queryClient = useQueryClient();
   
-  const isAuthenticated = !!accessToken;
+  const isAuthenticated = sessionState === 'AUTHENTICATED';
+  const shouldFetchBootstrap = isHydrated && isAuthenticated && apiReachable === true;
 
   // useSession acts as a strict Facade over the bootstrap query
-  const { data: bootstrap, isLoading, error } = useBootstrapQuery();
+  const { data: bootstrap, isLoading, error } = useBootstrapQuery(shouldFetchBootstrap);
 
   const identity = isAuthenticated && bootstrap?.identity ? bootstrap.identity : null;
   const businesses = isAuthenticated && bootstrap?.businesses ? (bootstrap.businesses as unknown as Business[]) : [];
@@ -78,6 +81,11 @@ export const useSession = (): SessionContext => {
   if (!selectedBusiness && businesses.length > 0) {
       selectedBusiness = businesses[0];
   }
+
+  const application = isAuthenticated && bootstrap?.application ? bootstrap.application : null;
+  const setup = isAuthenticated && bootstrap?.setup ? bootstrap.setup : null;
+  const subscription = isAuthenticated && bootstrap?.subscription ? bootstrap.subscription : null;
+  const workspace = isAuthenticated && bootstrap?.workspace ? bootstrap.workspace : null;
 
   const permissions = isAuthenticated ? (bootstrap?.permissions as unknown as Permission[] || []) : [];
   const featureFlags = isAuthenticated ? (bootstrap?.featureFlags as unknown as FeatureFlag[] || []) : [];
@@ -99,6 +107,10 @@ export const useSession = (): SessionContext => {
     identity,
     businesses,
     selectedBusiness,
+    application,
+    setup,
+    subscription,
+    workspace,
     permissions,
     featureFlags,
     navigation,

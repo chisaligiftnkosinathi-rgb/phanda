@@ -1,3 +1,18 @@
+/**
+ * @backend-only
+ *
+ * ShadowExecutor wraps operations in the full AXIONYX audit/replay pipeline.
+ * It imports compositionRoot, which depends on Node.js-only packages:
+ *   @axionyx/audit  → crypto
+ *   @axionyx/core   → crypto, fs
+ *   @axionyx/runtime → path, stream
+ *
+ * DO NOT import this file from any Expo/React Native module.
+ * Importing it will cause Metro bundling to fail with "Node standard library" errors.
+ *
+ * Future: Shadow comparison should run as a FastAPI middleware or background task
+ * on the server, so the mobile client never needs to know it exists.
+ */
 import { EvidenceBundle } from "@axionyx/contracts";
 import { AxionyxSystem } from "../../bootstrap/compositionRoot";
 import { CausalTrace } from "@axionyx/audit/dist/model/TraceTypes";

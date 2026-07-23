@@ -2,7 +2,7 @@ import { MediaAttachment } from "./MediaAttachment";
 import { MediaStore } from "./MediaStore";
 import { MediaHasher } from "./MediaHasher";
 import { MediaError } from "./MediaErrors";
-import * as fs from 'fs'; // Just for size check in Node testing, in prod use expo-file-system
+
 
 export class MediaPipeline {
   constructor(
@@ -26,13 +26,12 @@ export class MediaPipeline {
       // 1. Calculate Checksum from temp file
       const checksum = await this.hasher.hashFile(tempUri);
 
-      // 2. Calculate Size (using fs.promises.stat for Node mock)
+      // 2. Calculate Size via the injected MediaStore (Expo: FileSystem.getInfoAsync, Node: fs.stat)
       let size = 0;
       try {
-        const stats = await fs.promises.stat(tempUri);
-        size = stats.size;
+        size = await this.store.getFileSize(tempUri);
       } catch (e) {
-        // Fallback or ignore for now, in real app use FileSystem.getInfoAsync
+        // Non-fatal: size is informational metadata. Continue without it.
       }
 
       // 3. Move to permanent store

@@ -27,6 +27,16 @@ export interface ReadinessResult {
 export interface HandshakeResult {
     connected: boolean;
     latency_ms?: number;
+    api_version?: string;
+    deployment?: string;
+    maintenance?: boolean;
+    minimum_mobile_version?: string;
+    recommended_mobile_version?: string;
+    features?: {
+        payments?: boolean;
+        inventory?: boolean;
+        telemetry?: boolean;
+    };
 }
 
 export const healthApi = {

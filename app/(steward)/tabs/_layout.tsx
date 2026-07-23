@@ -1,55 +1,59 @@
+import React from 'react';
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function TabsLayout() {
-    return (
-        <Tabs screenOptions={{
-            headerShown: false,
-            tabBarActiveTintColor: '#111827',
-            tabBarInactiveTintColor: '#9CA3AF',
-        }}>
-            <Tabs.Screen
-                name="home"
-                options={{
-                    title: 'Home',
-                    tabBarIcon: ({ color }) => <Ionicons name="home-outline" size={24} color={color} />
-                }}
-            />
-            <Tabs.Screen
-                name="index"
-                options={{
-                    title: 'Opportunities',
-                    tabBarIcon: ({ color }) => <Ionicons name="megaphone-outline" size={24} color={color} />
-                }}
-            />
-            <Tabs.Screen
-                name="leads"
-                options={{
-                    title: 'Leads',
-                    tabBarIcon: ({ color }) => <Ionicons name="mail-outline" size={24} color={color} />
-                }}
-            />
-            <Tabs.Screen
-                name="visibility"
-                options={{
-                    title: 'Visibility',
-                    tabBarIcon: ({ color }) => <Ionicons name="eye-outline" size={24} color={color} />
-                }}
-            />
-            <Tabs.Screen
-                name="timeline"
-                options={{
-                    title: 'Timeline',
-                    tabBarIcon: ({ color }) => <Ionicons name="time-outline" size={24} color={color} />
-                }}
-            />
-            <Tabs.Screen
-                name="profile"
-                options={{
-                    title: 'Profile',
-                    tabBarIcon: ({ color }) => <Ionicons name="person-outline" size={24} color={color} />
-                }}
-            />
-        </Tabs>
-    );
+  return (
+    <Tabs
+      screenOptions={{
+        headerShown: false,
+        tabBarActiveTintColor: '#2A9D8F',
+        tabBarInactiveTintColor: '#6c757d',
+        tabBarStyle: {
+          backgroundColor: '#ffffff',
+          borderTopColor: '#f1f3f5',
+          elevation: 0,
+          height: 60,
+          paddingBottom: 8,
+          paddingTop: 8,
+        },
+      }}
+    >
+      <Tabs.Screen
+        name="home"
+        options={{
+          title: 'Home',
+          tabBarIcon: ({ color }) => <Ionicons name="home-outline" color={color} size={24} />,
+        }}
+      />
+      <Tabs.Screen
+        name="explore"
+        options={{
+          title: 'Explore',
+          tabBarIcon: ({ color }) => <Ionicons name="compass-outline" color={color} size={24} />,
+        }}
+      />
+      <Tabs.Screen
+        name="leads"
+        options={{
+          title: 'Leads',
+          tabBarIcon: ({ color }) => <Ionicons name="mail-outline" color={color} size={24} />,
+        }}
+      />
+      <Tabs.Screen
+        name="manage"
+        options={{
+          title: 'Manage',
+          tabBarIcon: ({ color }) => <Ionicons name="grid-outline" color={color} size={24} />,
+        }}
+      />
+      <Tabs.Screen
+        name="profile"
+        options={{
+          title: 'Profile',
+          tabBarIcon: ({ color }) => <Ionicons name="person-outline" color={color} size={24} />,
+        }}
+      />
+    </Tabs>
+  );
 }

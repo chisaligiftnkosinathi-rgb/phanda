@@ -69,4 +69,9 @@ export class NodeMediaStore implements MediaStore {
     await walk(this.baseDir, this.baseDir);
     return results;
   }
+
+  async getFileSize(uri: string): Promise<number> {
+    const stats = await fs.stat(uri);
+    return stats.size;
+  }
 }

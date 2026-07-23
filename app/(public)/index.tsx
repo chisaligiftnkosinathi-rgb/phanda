@@ -1,7 +1,7 @@
 import { ActivityIndicator, Dimensions, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import StatsSaLocationPicker from '@/components/location/StatsSaLocationPicker';
-import { useEngineMarketplace } from '@/state/public/useEngineMarketplace';
+import { useMarketplace } from '@/state/public/useMarketplace';
 import { MarketplaceCard } from '@/components/marketplace/MarketplaceCard';
 import { getArchetypeGroups } from '@/types/tradeArchetypeTree';
 
@@ -27,13 +27,17 @@ export default function PublicGatewayScreen() {
     const {
         items,
         loading,
-        error,
-        selectedCategory,
+        selectedArchetype,
         location,
-        policyLevel,
-        setCategoryFilter,
+        setArchetypeFilter,
         setLocationFilter,
-    } = useEngineMarketplace('explore');
+    } = useMarketplace('explore');
+
+    // Mocks don't have policyLevel or error currently
+    const policyLevel = 'NORMAL';
+    const error = null;
+    const selectedCategory = selectedArchetype;
+    const setCategoryFilter = setArchetypeFilter;
 
     const filterArchetypes: ArchetypeGroup[] = getArchetypeGroups() || [];
     const policyBanner = POLICY_BANNER[policyLevel];

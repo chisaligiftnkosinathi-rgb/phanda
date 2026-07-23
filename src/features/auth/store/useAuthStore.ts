@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 import { storage } from '@/shared/utils/storage';
 
+export type SessionState = 'UNKNOWN' | 'HYDRATING' | 'AUTHENTICATED' | 'UNAUTHENTICATED';
+
 interface AuthState {
   accessToken?: string;
   refreshToken?: string;
@@ -12,6 +14,7 @@ interface AuthState {
   widgetVisibility: Record<string, boolean>;
   timelinePresentation: 'list' | 'grid' | 'compact';
 
+  sessionState: SessionState;
   isHydrated: boolean;
 
   // Actions
@@ -30,12 +33,17 @@ export const useAuthStore = create<AuthState>((set) => ({
   sidebarOpen: true,
   widgetVisibility: {},
   timelinePresentation: 'list',
+  sessionState: 'UNKNOWN',
   isHydrated: false,
 
   setTokens: async (access?: string, refresh?: string) => {
     if (access) await storage.setToken(access);
     else await storage.removeToken();
-    set({ accessToken: access, refreshToken: refresh });
+    set({ 
+      accessToken: access, 
+      refreshToken: refresh,
+      sessionState: access ? 'AUTHENTICATED' : 'UNAUTHENTICATED'
+    });
   },
 
   logout: async () => {
@@ -43,21 +51,23 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ 
         accessToken: undefined, 
         refreshToken: undefined, 
-        selectedBusinessId: undefined 
+        selectedBusinessId: undefined,
+        sessionState: 'UNAUTHENTICATED'
     });
   },
 
   hydrate: async () => {
+    set({ sessionState: 'HYDRATING' });
     try {
       const token = await storage.getToken();
       if (token) {
-        set({ accessToken: token, isHydrated: true });
+        set({ accessToken: token, isHydrated: true, sessionState: 'AUTHENTICATED' });
       } else {
-        set({ isHydrated: true });
+        set({ isHydrated: true, sessionState: 'UNAUTHENTICATED' });
       }
     } catch (error) {
       console.error('Failed to hydrate auth state:', error);
-      set({ isHydrated: true });
+      set({ isHydrated: true, sessionState: 'UNAUTHENTICATED' });
     }
   },
 

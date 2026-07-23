@@ -59,10 +59,50 @@ export interface NavigationItem {
   badge?: number;
 }
 
+export interface ApplicationState {
+  stage: string;
+}
+
+export interface SetupState {
+  exists: boolean;
+  completed: boolean;
+  current_step: number;
+  total_steps: number;
+}
+
+export interface SubscriptionState {
+  status: string;
+  plan: string;
+}
+
+export interface WorkspaceSnapshot {
+  visibility: string;
+  category: string;
+  location: string;
+  subscription_plan: string;
+}
+
+export interface WorkspaceSummary {
+  leads: number;
+  quotes: number;
+  views: number;
+  followups: number;
+}
+
+export interface Workspace {
+  priority: string;
+  snapshot: WorkspaceSnapshot;
+  summary: WorkspaceSummary;
+}
+
 export interface SessionContext {
     identity: Identity | null;
     businesses: Business[];
     selectedBusiness: Business | null;
+    application: ApplicationState | null;
+    setup: SetupState | null;
+    subscription: SubscriptionState | null;
+    workspace: Workspace | null;
     permissions: Permission[];
     featureFlags: FeatureFlag[];
     navigation: NavigationItem[];

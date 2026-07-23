@@ -32,24 +32,8 @@ let cachedToken: string | null = null;
 let tokenExpiry: number = 0;
 
 async function getToken(): Promise<string | null> {
-    const now = Date.now();
-
-    if (cachedToken && now < tokenExpiry) {
-        return cachedToken;
-    }
-
-    try {
-        const { data } = await supabase.auth.getSession();
-        const session = data?.session;
-
-        cachedToken = session?.access_token ?? null;
-        tokenExpiry = now + 45 * 1000; // refresh every 45s
-
-        return cachedToken;
-    } catch (err) {
-        console.warn('[API] Unable to resolve Supabase session:', err);
-        return null;
-    }
+    const { useAuthStore } = require('@/features/auth/store/useAuthStore');
+    return useAuthStore.getState().accessToken || null;
 }
 
 /* ---------------------------------------------------

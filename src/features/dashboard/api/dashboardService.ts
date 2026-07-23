@@ -19,6 +19,7 @@ export const useDashboardQuery = () => {
     const query = useQuery<DashboardResponse, Error, DashboardViewModel>({
         queryKey: ['dashboard'],
         queryFn: () => getDashboardApiV1DashboardGet() as unknown as Promise<DashboardResponse>,
+        enabled: session.authenticated && !!session.identity,
         staleTime: 1000 * 60 * 5, // 5 minutes
         retry: false, // Don't aggressively retry on 404, fallback to snapshot quickly
         select: (data) => mapDashboardResponseToViewModel(data, 'live', activeBusiness),

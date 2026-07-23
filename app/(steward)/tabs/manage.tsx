@@ -1,11 +1,11 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 
-export default function ProfileTab() {
+export default function ManageTab() {
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Profile</Text>
-      <Text style={styles.subtitle}>Settings, payments, and subscription.</Text>
+      <Text style={styles.title}>Manage</Text>
+      <Text style={styles.subtitle}>Products, services, media, and inventory.</Text>
     </View>
   );
 }
