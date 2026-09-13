@@ -22,6 +22,8 @@ import {
     rejectPayment,
     getMerchantKYCQueue,
     reviewMerchantKYC,
+    nudgeMerchantKYC,
+    triggerComplianceEscalations,
     MerchantKYCItem
 } from '@/api/adminApi';
 import { theme } from '@/config/theme';
@@ -42,12 +44,18 @@ export default function AdminPaymentProofsScreen() {
     const [selectedProfileId, setSelectedProfileId] = useState<string | null>(null);
     const [selectedMerchantId, setSelectedMerchantId] = useState<string | null>(null);
 
+    // Nudge Modal State
+    const [nudgeModalVisible, setNudgeModalVisible] = useState(false);
+    const [nudgeMessage, setNudgeMessage] = useState('');
+    const [nudgeMerchantId, setNudgeMerchantId] = useState<string | null>(null);
+    const [nudgeMerchantName, setNudgeMerchantName] = useState<string>('');
+
     const loadData = useCallback(async () => {
         setLoading(true);
         try {
             const [proofsData, kycData] = await Promise.all([
                 getPaymentProofs('pending_review').catch(() => []),
-                getMerchantKYCQueue().catch(() => [])
+                getMerchantKYCQueue(undefined, true).catch(() => [])
             ]);
             setProofs(proofsData);
             setKycQueue(kycData);
@@ -137,6 +145,47 @@ export default function AdminPaymentProofsScreen() {
         setRejectModalVisible(true);
     };
 
+    const openNudgeModal = (merchantId: string, merchantName: string) => {
+        setNudgeMerchantId(merchantId);
+        setNudgeMerchantName(merchantName);
+        setNudgeMessage("Please upload clear, legible copies of your ID and proof of address so we can approve your account for payouts.");
+        setNudgeModalVisible(true);
+    };
+
+    const handleSendNudge = async () => {
+        if (!nudgeMerchantId) return;
+        setActionLoading(true);
+        try {
+            await nudgeMerchantKYC(nudgeMerchantId, nudgeMessage.trim());
+            Alert.alert("Compliance Nudge Sent", `Notification dispatched to ${nudgeMerchantName}.`);
+            setNudgeModalVisible(false);
+            await loadData();
+        } catch (err: unknown) {
+            Alert.alert('Error', err instanceof Error ? err.message : 'Failed to send nudge');
+        } finally {
+            setActionLoading(false);
+        }
+    };
+
+    const handleTriggerScanner = async () => {
+        setActionLoading(true);
+        try {
+            const report = await triggerComplianceEscalations();
+            Alert.alert(
+                "Compliance Scan Complete",
+                `Scanned ${report.scanned_merchants} merchants.\n` +
+                `• SLA Breaches: ${report.sla_breaches_detected}\n` +
+                `• Stale Balance Alerts: ${report.stale_balance_alarms}\n` +
+                `• Nudges Required: ${report.unverified_nudges_triggered}`
+            );
+            await loadData();
+        } catch (err: unknown) {
+            Alert.alert('Scanner Error', err instanceof Error ? err.message : 'Failed to execute compliance scanner');
+        } finally {
+            setActionLoading(false);
+        }
+    };
+
     const handleReject = async () => {
         if (!rejectNote.trim()) {
             Alert.alert("Required", "Please provide a reason for rejection.");
@@ -174,7 +223,7 @@ export default function AdminPaymentProofsScreen() {
         <SafeAreaView style={styles.safeArea}>
             <PageHeader title="Compliance & Proofs" showBack />
 
-            {/* Segmented Control */}
+            {/* Segmented Control & Governance Action */}
             <View style={styles.segmentContainer}>
                 <TouchableOpacity
                     style={[styles.segmentBtn, activeTab === 'proofs' && styles.segmentBtnActive]}
@@ -186,7 +235,7 @@ export default function AdminPaymentProofsScreen() {
                         color={activeTab === 'proofs' ? '#FFFFFF' : '#6B7280'}
                     />
                     <Text style={[styles.segmentText, activeTab === 'proofs' && styles.segmentTextActive]}>
-                        Setup Proofs ({proofs.length})
+                        Proofs ({proofs.length})
                     </Text>
                 </TouchableOpacity>
 
@@ -200,8 +249,16 @@ export default function AdminPaymentProofsScreen() {
                         color={activeTab === 'kyc' ? '#FFFFFF' : '#6B7280'}
                     />
                     <Text style={[styles.segmentText, activeTab === 'kyc' && styles.segmentTextActive]}>
-                        Merchant KYC ({kycQueue.length})
+                        KYC ({kycQueue.length})
                     </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                    style={styles.scannerScanBtn}
+                    onPress={handleTriggerScanner}
+                    disabled={actionLoading}
+                >
+                    <Ionicons name="scan-outline" size={16} color="#4B5563" />
                 </TouchableOpacity>
             </View>
 
@@ -290,12 +347,42 @@ export default function AdminPaymentProofsScreen() {
                                                 <Text style={styles.kycMetaText}>Tax Ref: {item.tax_number}</Text>
                                             )}
                                         </View>
-                                        <View style={styles.statusBadge}>
-                                            <Text style={styles.statusBadgeText}>
-                                                {item.verification_status.toUpperCase()}
-                                            </Text>
+                                        <View style={{ alignItems: 'flex-end', gap: 6 }}>
+                                            <View style={styles.statusBadge}>
+                                                <Text style={styles.statusBadgeText}>
+                                                    {item.verification_status.toUpperCase()}
+                                                </Text>
+                                            </View>
+                                            {item.sla_status && (
+                                                <View style={[
+                                                    styles.slaBadge,
+                                                    item.sla_status === 'breached' ? styles.slaBadgeBreached :
+                                                    item.sla_status === 'approaching_sla' ? styles.slaBadgeApproaching :
+                                                    styles.slaBadgeOnTrack
+                                                ]}>
+                                                    <Text style={[
+                                                        styles.slaBadgeText,
+                                                        item.sla_status === 'breached' ? styles.slaBadgeTextBreached :
+                                                        item.sla_status === 'approaching_sla' ? styles.slaBadgeTextApproaching :
+                                                        styles.slaBadgeTextOnTrack
+                                                    ]}>
+                                                        {item.sla_status === 'breached' ? `🔴 SLA Breached (${item.pending_hours}h)` :
+                                                         item.sla_status === 'approaching_sla' ? `🟡 Urgency Alert (${item.pending_hours}h)` :
+                                                         `🟢 Within SLA (${item.pending_hours}h)`}
+                                                    </Text>
+                                                </View>
+                                            )}
                                         </View>
                                     </View>
+
+                                    {item.unclaimed_balance && item.unclaimed_balance > 0 ? (
+                                        <View style={styles.frozenBalanceBanner}>
+                                            <Ionicons name="lock-closed" size={14} color="#B45309" />
+                                            <Text style={styles.frozenBalanceText}>
+                                                Frozen Balance: R{item.unclaimed_balance.toFixed(2)} held pending compliance
+                                            </Text>
+                                        </View>
+                                    ) : null}
 
                                     <View style={styles.proofSection}>
                                         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, justifyContent: 'center' }}>
@@ -322,12 +409,21 @@ export default function AdminPaymentProofsScreen() {
 
                                     <View style={styles.actionsRow}>
                                         <TouchableOpacity
+                                            style={[styles.actionBtn, styles.nudgeBtn]}
+                                            onPress={() => openNudgeModal(item.merchant_id, item.merchant_name)}
+                                            disabled={actionLoading}
+                                        >
+                                            <Ionicons name="notifications-outline" size={16} color="#4B5563" />
+                                            <Text style={styles.nudgeBtnText}>Nudge</Text>
+                                        </TouchableOpacity>
+
+                                        <TouchableOpacity
                                             style={[styles.actionBtn, styles.rejectBtn]}
                                             onPress={() => openRejectKycModal(item.merchant_id)}
                                             disabled={actionLoading}
                                         >
-                                            <Ionicons name="close-circle-outline" size={18} color="#EF4444" />
-                                            <Text style={styles.rejectBtnText}>Reject KYC</Text>
+                                            <Ionicons name="close-circle-outline" size={16} color="#EF4444" />
+                                            <Text style={styles.rejectBtnText}>Reject</Text>
                                         </TouchableOpacity>
 
                                         <TouchableOpacity
@@ -335,8 +431,8 @@ export default function AdminPaymentProofsScreen() {
                                             onPress={() => handleApproveKYC(item.merchant_id)}
                                             disabled={actionLoading}
                                         >
-                                            <Ionicons name="shield-checkmark-outline" size={18} color="#FFFFFF" />
-                                            <Text style={styles.approveBtnText}>Approve & Unlock Payouts</Text>
+                                            <Ionicons name="shield-checkmark-outline" size={16} color="#FFFFFF" />
+                                            <Text style={styles.approveBtnText}>Approve</Text>
                                         </TouchableOpacity>
                                     </View>
                                 </View>
@@ -375,6 +471,48 @@ export default function AdminPaymentProofsScreen() {
                                 disabled={actionLoading}
                             >
                                 <Text style={styles.modalRejectText}>{actionLoading ? "Rejecting..." : "Reject Profile"}</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </View>
+            </Modal>
+
+            {/* Merchant Compliance Nudge Modal */}
+            <Modal visible={nudgeModalVisible} transparent animationType="slide">
+                <View style={styles.modalOverlay}>
+                    <View style={styles.modalContent}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                            <Ionicons name="notifications" size={22} color="#2A9D8F" />
+                            <Text style={styles.modalTitle}>Nudge Merchant</Text>
+                        </View>
+                        <Text style={styles.modalSub}>
+                            Send compliance instructions to {nudgeMerchantName} to request document updates or corrections.
+                        </Text>
+
+                        <TextInput
+                            style={styles.modalInput}
+                            placeholder="Type guidance message..."
+                            value={nudgeMessage}
+                            onChangeText={setNudgeMessage}
+                            multiline
+                            numberOfLines={3}
+                        />
+
+                        <View style={styles.modalActions}>
+                            <TouchableOpacity
+                                style={[styles.modalBtn, styles.modalCancelBtn]}
+                                onPress={() => setNudgeModalVisible(false)}
+                            >
+                                <Text style={styles.modalCancelText}>Cancel</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                style={[styles.modalBtn, { backgroundColor: '#2A9D8F' }]}
+                                onPress={handleSendNudge}
+                                disabled={actionLoading}
+                            >
+                                <Text style={[styles.modalRejectText, { color: '#FFFFFF' }]}>
+                                    {actionLoading ? "Sending..." : "Dispatch Nudge"}
+                                </Text>
                             </TouchableOpacity>
                         </View>
                     </View>
@@ -467,5 +605,68 @@ const styles = StyleSheet.create({
         fontSize: 11,
         fontWeight: '700',
         color: '#D97706',
+    },
+    scannerScanBtn: {
+        backgroundColor: '#FFFFFF',
+        borderWidth: 1,
+        borderColor: '#E5E7EB',
+        borderRadius: 12,
+        paddingHorizontal: 12,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    slaBadge: {
+        paddingHorizontal: 8,
+        paddingVertical: 3,
+        borderRadius: 8,
+    },
+    slaBadgeOnTrack: {
+        backgroundColor: '#ECFDF5',
+    },
+    slaBadgeApproaching: {
+        backgroundColor: '#FEF3C7',
+    },
+    slaBadgeBreached: {
+        backgroundColor: '#FEE2E2',
+    },
+    slaBadgeText: {
+        fontSize: 11,
+        fontWeight: '700',
+    },
+    slaBadgeTextOnTrack: {
+        color: '#059669',
+    },
+    slaBadgeTextApproaching: {
+        color: '#D97706',
+    },
+    slaBadgeTextBreached: {
+        color: '#DC2626',
+    },
+    frozenBalanceBanner: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+        backgroundColor: '#FFFBEB',
+        borderWidth: 1,
+        borderColor: '#FDE68A',
+        borderRadius: 8,
+        paddingHorizontal: 10,
+        paddingVertical: 6,
+        marginBottom: 12,
+    },
+    frozenBalanceText: {
+        fontSize: 12,
+        fontWeight: '600',
+        color: '#92400E',
+    },
+    nudgeBtn: {
+        backgroundColor: '#F3F4F6',
+        borderWidth: 1,
+        borderColor: '#D1D5DB',
+    },
+    nudgeBtnText: {
+        fontSize: 13,
+        fontWeight: '600',
+        color: '#374151',
     },
 });

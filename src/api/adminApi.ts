@@ -253,4 +253,100 @@ export async function getTreasuryAnalytics(range: string = '30d'): Promise<Treas
     return res.json();
 }
 
+// ----------------------------------------------------------------------------
+// Merchant KYC Compliance & Review Functions
+// ----------------------------------------------------------------------------
+export interface MerchantKYCItem {
+    merchant_id: string;
+    merchant_name: string;
+    email?: string;
+    verification_status: string;
+    id_document_url?: string;
+    proof_of_address_url?: string;
+    business_registration_number?: string;
+    tax_number?: string;
+    payout_enabled: boolean;
+    created_at: string;
+    pending_hours?: number;
+    sla_status?: 'on_track' | 'approaching_sla' | 'breached';
+    unclaimed_balance?: number;
+    requires_nudge?: boolean;
+}
+
+export async function submitMerchantKYC(payload: {
+    id_document_url: string;
+    proof_of_address_url: string;
+    business_registration_number?: string;
+    tax_number?: string;
+}): Promise<any> {
+    const headers = await getAuthHeaders();
+    const res = await fetch(`${API_URL}/api/v1/auth/merchant/kyc`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(payload)
+    });
+    if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.detail || 'Failed to submit KYC documents');
+    }
+    return res.json();
+}
+
+export async function getMerchantKYCQueue(status?: string, sortByUrgency: boolean = true): Promise<MerchantKYCItem[]> {
+    const headers = await getAuthHeaders();
+    let url = `${API_URL}/api/v1/admin/merchants/kyc-queue?sort_by_urgency=${sortByUrgency}`;
+    if (status) {
+        url += `&status=${status}`;
+    }
+    const res = await fetch(url, { headers });
+    if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.detail || 'Failed to fetch KYC queue');
+    }
+    return res.json();
+}
+
+export async function reviewMerchantKYC(merchantId: string, action: 'approve' | 'reject', notes?: string): Promise<any> {
+    const headers = await getAuthHeaders();
+    const res = await fetch(`${API_URL}/api/v1/admin/merchants/${merchantId}/kyc-review`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ action, notes })
+    });
+    if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.detail || 'Failed to review KYC submission');
+    }
+    return res.json();
+}
+
+export async function nudgeMerchantKYC(merchantId: string, message?: string): Promise<any> {
+    const headers = await getAuthHeaders();
+    const res = await fetch(`${API_URL}/api/v1/admin/merchants/${merchantId}/kyc-nudge`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ message })
+    });
+    if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.detail || 'Failed to send compliance nudge');
+    }
+    return res.json();
+}
+
+export async function triggerComplianceEscalations(): Promise<any> {
+    const headers = await getAuthHeaders();
+    const res = await fetch(`${API_URL}/api/v1/admin/compliance/escalations/trigger`, {
+        method: 'POST',
+        headers
+    });
+    if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.detail || 'Failed to trigger compliance escalations');
+    }
+    return res.json();
+}
+
+
+
 
