@@ -214,3 +214,43 @@ export async function settleMerchantEarnings(merchantId: string, settlementRefer
     return res.json();
 }
 
+export interface TreasuryAnalytics {
+    time_range: string;
+    revenue_trends: Array<{
+        date: string;
+        gross_volume: number;
+        platform_fee: number;
+        merchant_share: number;
+        order_count: number;
+    }>;
+    payout_velocity: {
+        avg_payout_turnaround_hours: number;
+        settled_last_7_days: number;
+        settled_last_30_days: number;
+        active_earning_merchants: number;
+    };
+    gateway_performance: Array<{
+        provider: string;
+        total_volume: number;
+        transaction_count: number;
+        success_rate: number;
+        average_order_value: number;
+    }>;
+    carrier_distribution: Array<{
+        carrier: string;
+        shipment_count: number;
+        percentage: number;
+    }>;
+}
+
+export async function getTreasuryAnalytics(range: string = '30d'): Promise<TreasuryAnalytics> {
+    const headers = await getAuthHeaders();
+    const res = await fetch(`${API_URL}/api/v1/admin/treasury/analytics?range=${range}`, { headers });
+    if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.detail || 'Failed to fetch treasury analytics');
+    }
+    return res.json();
+}
+
+

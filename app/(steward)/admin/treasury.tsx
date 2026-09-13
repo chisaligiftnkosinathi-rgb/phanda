@@ -29,24 +29,29 @@ export default function TreasuryDashboardScreen() {
     const router = useRouter();
     const { platformRole, loading: isLoadingProfile } = useSession();
 
-    const [activeTab, setActiveTab] = useState<'overview' | 'transactions' | 'payouts'>('overview');
+    const [activeTab, setActiveTab] = useState<'overview' | 'transactions' | 'payouts' | 'analytics'>('overview');
+    const [analyticsRange, setAnalyticsRange] = useState<'7d' | '30d' | '90d' | '1y'>('30d');
     const [summary, setSummary] = useState<TreasurySummary | null>(null);
     const [transactions, setTransactions] = useState<TreasuryTransaction[]>([]);
     const [payouts, setPayouts] = useState<PayoutQueueItem[]>([]);
+    const [analytics, setAnalytics] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [settlingMerchantId, setSettlingMerchantId] = useState<string | null>(null);
 
-    const loadDashboardData = async () => {
+    const loadDashboardData = async (rangeOverride?: '7d' | '30d' | '90d' | '1y') => {
+        const rangeToUse = rangeOverride || analyticsRange;
         try {
-            const [sumData, txData, payoutData] = await Promise.all([
+            const [sumData, txData, payoutData, analyticsData] = await Promise.all([
                 getTreasurySummary(),
                 getTreasuryTransactions(25, 0),
-                getPayoutQueue()
+                getPayoutQueue(),
+                getTreasuryAnalytics(rangeToUse)
             ]);
             setSummary(sumData);
             setTransactions(txData);
             setPayouts(payoutData);
+            setAnalytics(analyticsData);
         } catch (err: any) {
             Alert.alert('Error', err.message || 'Failed to load treasury data');
         } finally {
@@ -149,6 +154,20 @@ export default function TreasuryDashboardScreen() {
                     />
                     <Text style={[styles.tabText, activeTab === 'payouts' && styles.tabTextActive]}>
                         Payouts ({payouts.length})
+                    </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                    style={[styles.tabButton, activeTab === 'analytics' && styles.tabButtonActive]}
+                    onPress={() => setActiveTab('analytics')}
+                >
+                    <Ionicons
+                        name="bar-chart-outline"
+                        size={16}
+                        color={activeTab === 'analytics' ? theme.colors.primary : '#64748B'}
+                    />
+                    <Text style={[styles.tabText, activeTab === 'analytics' && styles.tabTextActive]}>
+                        Analytics
                     </Text>
                 </TouchableOpacity>
             </View>
@@ -366,6 +385,108 @@ export default function TreasuryDashboardScreen() {
                                 </View>
                             ))
                         )}
+                    </View>
+                )}
+
+                {/* 4. ANALYTICS & VELOCITY TAB */}
+                {activeTab === 'analytics' && (
+                    <View>
+                        {/* Time Range Selector */}
+                        <View style={styles.rangeSelectorContainer}>
+                            {(['7d', '30d', '90d', '1y'] as const).map((r) => (
+                                <TouchableOpacity
+                                    key={r}
+                                    style={[styles.rangeBtn, analyticsRange === r && styles.rangeBtnActive]}
+                                    onPress={() => {
+                                        setAnalyticsRange(r);
+                                        loadDashboardData(r);
+                                    }}
+                                >
+                                    <Text style={[styles.rangeBtnText, analyticsRange === r && styles.rangeBtnTextActive]}>
+                                        {r.toUpperCase()}
+                                    </Text>
+                                </TouchableOpacity>
+                            ))}
+                        </View>
+
+                        {/* Payout Velocity Gauges */}
+                        <Text style={styles.sectionTitle}>Disbursement & Payout Velocity</Text>
+                        <View style={styles.grid}>
+                            <View style={styles.statCard}>
+                                <Text style={styles.statLabel}>Avg Payout Turnaround</Text>
+                                <Text style={[styles.statValue, { color: '#2A9D8F' }]}>
+                                    {(analytics?.payout_velocity?.avg_payout_turnaround_hours || 0).toFixed(1)} hrs
+                                </Text>
+                                <Text style={styles.statSubtext}>Payment confirmation to settlement</Text>
+                            </View>
+
+                            <View style={styles.statCard}>
+                                <Text style={styles.statLabel}>Active Earning Merchants</Text>
+                                <Text style={styles.statValue}>
+                                    {analytics?.payout_velocity?.active_earning_merchants || 0}
+                                </Text>
+                                <Text style={styles.statSubtext}>Active in the last 30 days</Text>
+                            </View>
+                        </View>
+
+                        <View style={styles.grid}>
+                            <View style={styles.statCard}>
+                                <Text style={styles.statLabel}>Settled Last 7 Days</Text>
+                                <Text style={styles.statValue}>
+                                    R{(analytics?.payout_velocity?.settled_last_7_days || 0).toFixed(2)}
+                                </Text>
+                            </View>
+
+                            <View style={styles.statCard}>
+                                <Text style={styles.statLabel}>Settled Last 30 Days</Text>
+                                <Text style={styles.statValue}>
+                                    R{(analytics?.payout_velocity?.settled_last_30_days || 0).toFixed(2)}
+                                </Text>
+                            </View>
+                        </View>
+
+                        {/* Gateway Performance Table */}
+                        <Text style={styles.sectionTitle}>Gateway Performance & Conversions</Text>
+                        <View style={styles.breakdownCard}>
+                            {(analytics?.gateway_performance || []).map((gw: any) => (
+                                <View key={gw.provider} style={styles.breakdownRow}>
+                                    <View style={styles.breakdownLeft}>
+                                        <Ionicons name="flash-outline" size={18} color="#2A9D8F" />
+                                        <View>
+                                            <Text style={styles.breakdownLabel}>
+                                                {gw.provider === 'payfast' ? 'PayFast' : gw.provider === 'paystack' ? 'Paystack' : 'PayJustNow'}
+                                            </Text>
+                                            <Text style={styles.breakdownSub}>
+                                                AOV: R{gw.average_order_value.toFixed(2)} • Success: {gw.success_rate}%
+                                            </Text>
+                                        </View>
+                                    </View>
+                                    <View style={styles.breakdownRight}>
+                                        <Text style={styles.breakdownValue}>R{gw.total_volume.toFixed(2)}</Text>
+                                        <Text style={styles.breakdownSub}>{gw.transaction_count} orders</Text>
+                                    </View>
+                                </View>
+                            ))}
+                        </View>
+
+                        {/* Carrier Distribution */}
+                        <Text style={styles.sectionTitle}>Logistics Distribution</Text>
+                        <View style={styles.breakdownCard}>
+                            {(analytics?.carrier_distribution || []).map((cr: any) => (
+                                <View key={cr.carrier} style={styles.breakdownRow}>
+                                    <View style={styles.breakdownLeft}>
+                                        <Ionicons name="cube-outline" size={18} color="#4B5563" />
+                                        <Text style={styles.breakdownLabel}>
+                                            {cr.carrier === 'courier_guy' ? 'The Courier Guy' : cr.carrier === 'pudo' ? 'Pudo Smart Lockers' : 'Pickup'}
+                                        </Text>
+                                    </View>
+                                    <View style={styles.breakdownRight}>
+                                        <Text style={styles.breakdownValue}>{cr.shipment_count} shipments</Text>
+                                        <Text style={styles.breakdownSub}>{cr.percentage}% share</Text>
+                                    </View>
+                                </View>
+                            ))}
+                        </View>
                     </View>
                 )}
             </ScrollView>
@@ -664,5 +785,34 @@ const styles = StyleSheet.create({
         fontSize: 14,
         color: '#64748B',
         marginTop: 10,
+    },
+    rangeSelectorContainer: {
+        flexDirection: 'row',
+        backgroundColor: '#FFFFFF',
+        borderRadius: 10,
+        padding: 4,
+        marginBottom: 16,
+        borderWidth: 1,
+        borderColor: '#E2E8F0',
+        gap: 6,
+    },
+    rangeBtn: {
+        flex: 1,
+        paddingVertical: 8,
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderRadius: 8,
+        backgroundColor: '#F1F5F9',
+    },
+    rangeBtnActive: {
+        backgroundColor: '#2A9D8F',
+    },
+    rangeBtnText: {
+        fontSize: 12,
+        fontWeight: '700',
+        color: '#64748B',
+    },
+    rangeBtnTextActive: {
+        color: '#FFFFFF',
     },
 });
