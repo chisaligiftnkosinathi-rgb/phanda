@@ -74,7 +74,7 @@ export default function PaymentVerificationScreen() {
       <View style={styles.container}>
         <Text style={styles.title}>Account Verified</Text>
         <Text style={styles.text}>Your account is fully verified. You can now access all iPhande tools.</Text>
-        <TouchableOpacity style={styles.button} onPress={() => router.replace('/(steward)/tabs')}>
+        <TouchableOpacity style={styles.button} onPress={() => router.replace('/(steward)/tabs/home' as any)}>
           <Text style={styles.buttonText}>Go to Dashboard</Text>
         </TouchableOpacity>
       </View>

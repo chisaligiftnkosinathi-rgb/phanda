@@ -13,9 +13,31 @@
     }
   },
   "include": [
-    "**/*.ts",
-    "**/*.tsx",
+    "app/**/*.ts",
+    "app/**/*.tsx",
+    "src/api/**/*.ts",
+    "src/components/**/*.ts",
+    "src/components/**/*.tsx",
+    "src/config/**/*.ts",
+    "src/features/**/*.ts",
+    "src/features/**/*.tsx",
+    "src/generated/**/*.ts",
+    "src/lib/**/*.ts",
+    "src/shared/**/*.ts",
+    "src/shared/**/*.tsx",
+    "src/state/**/*.ts",
+    "src/utils/**/*.ts",
     ".expo/types/**/*.ts",
     "expo-env.d.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "src/adapters/**",
+    "src/bootstrap/compositionRoot.ts",
+    "src/domain/economics/**",
+    "src/engine/**",
+    "src/projections/**",
+    "src/repositories/**",
+    "src/state/public/useEngineMarketplace.ts"
   ]
 }

@@ -4,8 +4,7 @@ export type UIInsightType =
   | "execution_efficiency"
   | "emotional_trend"
   | "meaning_evolution"
-  | "system_anomaly"
-  | "scripture_influence";
+  | "system_anomaly";
 
 export type UITrendDirection = "improving" | "declining" | "stable";
 
@@ -20,10 +19,7 @@ export interface UIInsight {
   sources: {
     workIds?: string[];
     leadIds?: string[];
-    reflectionIds?: string[];
     campaignIds?: string[];
-    givingIds?: string[];
-    scriptureIds?: string[];
   };
 
   // computed intelligence

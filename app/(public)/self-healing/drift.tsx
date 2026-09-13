@@ -44,8 +44,8 @@ export default function MemoryDriftScreen() {
         </Text>
         <Text style={styles.divNote}>
           {divergenceScore > 0.6 
-            ? "High tension: Scripture and meaning layers are shifting rapidly away from execution truth."
-            : "Stable: Meaning and execution are highly correlated."}
+            ? "High tension: Operational data is diverging from ledger execution truth."
+            : "Stable: Operations and transactions are highly correlated."}
         </Text>
       </View>
 

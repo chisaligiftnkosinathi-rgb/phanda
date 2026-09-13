@@ -131,7 +131,7 @@ export default function ProfileTab() {
                 <Text style={styles.businessBadgeText}>{selectedBusiness.displayName}</Text>
               </View>
 
-              {/* KYC Verification Card */}
+              {/* KYC Verification Card with Actionable Guidance */}
               <View style={styles.kycCard}>
                 <View style={styles.kycCardLeft}>
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
@@ -161,6 +161,14 @@ export default function ProfileTab() {
                       ? 'Under Review by Steward'
                       : 'Payouts Blocked • Submit KYC'}
                   </Text>
+                  {selectedBusiness?.kyc_review_notes ? (
+                    <View style={styles.kycNotesBanner}>
+                      <Ionicons name="chatbubble-ellipses-outline" size={13} color="#2A9D8F" />
+                      <Text style={styles.kycNotesText}>
+                        {selectedBusiness.kyc_review_notes}
+                      </Text>
+                    </View>
+                  ) : null}
                 </View>
                 {kycStatus !== 'verified' && (
                   <TouchableOpacity
@@ -592,6 +600,22 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 12,
     fontWeight: '700',
+  },
+  kycNotesBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: '#E8F5F3',
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+    marginTop: 6,
+  },
+  kycNotesText: {
+    fontSize: 11,
+    color: '#1E6F65',
+    fontWeight: '600',
+    flex: 1,
   },
 });
 

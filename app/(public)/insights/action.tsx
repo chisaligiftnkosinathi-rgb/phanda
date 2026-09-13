@@ -25,7 +25,7 @@ export default function RecomputeInsightScreen() {
       <View style={styles.form}>
         <View style={styles.infoBox}>
           <Text style={styles.infoText}>
-            This action will analyze all uncomputed Execution (Work, Leads, Invoices) and Meaning (Reflections, Campaigns, Giving, Scripture) data to derive new System Insights.
+            This action will analyze all uncomputed transaction, order, invoice, and operational activity data to derive new System Insights.
           </Text>
           <Text style={[styles.infoText, { marginTop: 16, fontWeight: "bold", color: "#4c1d95" }]}>
             It will NOT modify any origin data.

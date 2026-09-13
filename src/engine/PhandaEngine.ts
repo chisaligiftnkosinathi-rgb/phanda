@@ -46,14 +46,16 @@ export class PhandaEngine {
    */
   async captureFromSensor(
     sensorResult: SensorResult,
-    observationContent: string
+    observationContent: string,
+    injectedTimestamp?: number
   ): Promise<string> {
-    const observationId = `obs-${Date.now()}`;
+    const ts = injectedTimestamp ?? 0;
+    const observationId = `obs-${ts}`;
     const attachments = [];
 
     // Process media if the sensor produced any binary media (not text/location)
     if (sensorResult.tempUri && (sensorResult.type === 'photo' || sensorResult.type === 'audio' || sensorResult.type === 'document')) {
-      const mediaId = `media-${Date.now()}`;
+      const mediaId = `media-${ts}`;
       const fileExt = sensorResult.tempUri.substring(sensorResult.tempUri.lastIndexOf('.')) || '';
       
       const attachment = await this.mediaPipeline.processTempFile(
@@ -100,7 +102,7 @@ export class PhandaEngine {
     }
     
     // Reverse chronologically for the UI
-    return records.sort((a, b) => new Date(b.occurredAt).getTime() - new Date(a.occurredAt).getTime());
+    return records.sort((a, b) => (b.occurredAt < a.occurredAt ? -1 : b.occurredAt > a.occurredAt ? 1 : 0));
   }
 
   /**

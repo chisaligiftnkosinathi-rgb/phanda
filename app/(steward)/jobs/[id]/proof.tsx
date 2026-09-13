@@ -63,7 +63,7 @@ export default function ProofOfWorkScreen() {
             });
 
             Alert.alert("Job Completed", "Proof of work uploaded to the continuity ledger.", [
-                { text: "Finish", onPress: () => router.push('/tabs/timeline') }
+                { text: "Finish", onPress: () => router.push('/(steward)/tabs/home' as any) }
             ]);
         } catch (error) {
             Alert.alert("Upload Failed", "There was an issue saving your proof of work. Please try again.");

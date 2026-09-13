@@ -57,17 +57,8 @@ export default function InsightDetailScreen() {
         {data.sources.leadIds && data.sources.leadIds.length > 0 && (
           <Text style={styles.sourceItem}>Opportunities (Leads): {data.sources.leadIds.length} items</Text>
         )}
-        {data.sources.reflectionIds && data.sources.reflectionIds.length > 0 && (
-          <Text style={styles.sourceItem}>Observations (Reflections): {data.sources.reflectionIds.length} items</Text>
-        )}
         {data.sources.campaignIds && data.sources.campaignIds.length > 0 && (
           <Text style={styles.sourceItem}>Broadcasts (Campaigns): {data.sources.campaignIds.length} items</Text>
-        )}
-        {data.sources.givingIds && data.sources.givingIds.length > 0 && (
-          <Text style={styles.sourceItem}>Value Expressions (Giving): {data.sources.givingIds.length} items</Text>
-        )}
-        {data.sources.scriptureIds && data.sources.scriptureIds.length > 0 && (
-          <Text style={styles.sourceItem}>Canonical Truth (Scripture): {data.sources.scriptureIds.length} items</Text>
         )}
 
         {Object.values(data.sources).every(arr => !arr || arr.length === 0) && (

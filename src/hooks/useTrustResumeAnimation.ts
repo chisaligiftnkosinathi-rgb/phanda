@@ -19,7 +19,7 @@ export function useTrustResumeAnimation(entityId: string, initialBadgeState: Bad
 
   // React to global stage changes
   useEffect(() => {
-    let timerId: NodeJS.Timeout | undefined;
+    let timerId: ReturnType<typeof setTimeout> | undefined;
 
     const scale = scaleRef.current;
     const opacity = opacityRef.current;

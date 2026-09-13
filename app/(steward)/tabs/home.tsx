@@ -4,7 +4,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useSession } from '@/features/auth/hooks/useAuth';
 
+import { useRouter } from 'expo-router';
+
 export default function HomeTab() {
+  const router = useRouter();
   const { identity, selectedBusiness, workspace } = useSession();
 
   return (
@@ -85,8 +88,20 @@ export default function HomeTab() {
         {/* Quick Actions */}
         <Text style={styles.sectionTitle}>Quick Actions</Text>
         <View style={styles.actionsGrid}>
-          <View style={styles.actionBtn}><Button title="Post Service" onPress={() => {}} /></View>
-          <View style={styles.actionBtn}><Button title="Create Quote" onPress={() => {}} /></View>
+          <View style={styles.actionBtn}>
+            <Button
+              title="Post Service"
+              color="#2A9D8F"
+              onPress={() => router.push('/(steward)/opportunities/new' as any)}
+            />
+          </View>
+          <View style={styles.actionBtn}>
+            <Button
+              title="Create Quote"
+              color="#111827"
+              onPress={() => router.push('/(steward)/quotes/new' as any)}
+            />
+          </View>
         </View>
 
       </ScrollView>

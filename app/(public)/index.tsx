@@ -84,7 +84,7 @@ export default function PublicGatewayScreen() {
             <ScrollView
                 contentContainerStyle={[
                     styles.content,
-                    policyLevel === 'EMERGENCY_FREEZE' && styles.frozenContent
+                    (policyLevel as string) === 'EMERGENCY_FREEZE' && styles.frozenContent
                 ]}
             >
                 <Text style={styles.sectionTitle}>Featured Opportunities &amp; People</Text>

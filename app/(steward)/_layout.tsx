@@ -20,7 +20,7 @@ export default function StewardLayout() {
 
     // Handle Application Stage Routing
     if (application?.stage) {
-      const inSetup = segments.includes('setup');
+      const inSetup = (segments as string[]).includes('setup');
       
       if (application.stage === 'ONBOARDING' && !inSetup) {
         router.replace('/(steward)/setup');

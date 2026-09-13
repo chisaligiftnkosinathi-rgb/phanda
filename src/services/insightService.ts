@@ -74,10 +74,7 @@ export class InsightService {
       sources: {
         workIds: dto.sources?.workIds || [],
         leadIds: dto.sources?.leadIds || [],
-        reflectionIds: dto.sources?.reflectionIds || [],
         campaignIds: dto.sources?.campaignIds || [],
-        givingIds: dto.sources?.givingIds || [],
-        scriptureIds: dto.sources?.scriptureIds || []
       },
       signalStrength: typeof dto.signalStrength === 'number' ? dto.signalStrength : 0.5,
       confidence: typeof dto.confidence === 'number' ? dto.confidence : 0.5,

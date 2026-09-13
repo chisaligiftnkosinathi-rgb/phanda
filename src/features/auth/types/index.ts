@@ -49,6 +49,9 @@ export interface Business {
   setup_fee_proof_url?: string;
   permissions: Permission[];
   featureFlags: FeatureFlag[];
+  verification_status?: string;
+  kyc_review_notes?: string;
+  payout_enabled?: boolean;
 }
 
 export interface NavigationItem {
