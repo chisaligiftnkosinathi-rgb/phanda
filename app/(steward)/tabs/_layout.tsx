@@ -1,8 +1,12 @@
 import React from 'react';
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { useSession } from '@/features/auth';
 
 export default function TabsLayout() {
+  const { platformRole } = useSession();
+  const isBuyer = platformRole === 'buyer' || platformRole === 'guest';
+
   return (
     <Tabs
       screenOptions={{
@@ -23,6 +27,7 @@ export default function TabsLayout() {
         name="home"
         options={{
           title: 'Home',
+          href: isBuyer ? null : undefined,
           tabBarIcon: ({ color }) => <Ionicons name="home-outline" color={color} size={24} />,
         }}
       />
@@ -37,6 +42,7 @@ export default function TabsLayout() {
         name="leads"
         options={{
           title: 'Leads',
+          href: isBuyer ? null : undefined,
           tabBarIcon: ({ color }) => <Ionicons name="mail-outline" color={color} size={24} />,
         }}
       />
@@ -44,6 +50,7 @@ export default function TabsLayout() {
         name="manage"
         options={{
           title: 'Manage',
+          href: isBuyer ? null : undefined,
           tabBarIcon: ({ color }) => <Ionicons name="grid-outline" color={color} size={24} />,
         }}
       />
@@ -57,3 +64,4 @@ export default function TabsLayout() {
     </Tabs>
   );
 }
+
