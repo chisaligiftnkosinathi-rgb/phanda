@@ -27,6 +27,12 @@ import type {
 import type {
   AdvertisementCreate,
   AdvertisementOut,
+  AffiliateConversionPostback,
+  AffiliateLeadCreate,
+  AffiliateLeadOut,
+  AffiliateOfferOut,
+  AffiliateStatementIngest,
+  AffiliateStatementOut,
   BodyUploadMediaApiV1UploadPost,
   BodyUploadPaymentReceiptApiV1PaymentsIntentsPaymentIdReceiptUploadPost,
   BodyUploadSaleEvidenceForQuoteRequestApiV1QuoteRequestsQuoteRequestIdUploadSaleEvidencePost,
@@ -49,6 +55,9 @@ import type {
   DashboardResponse,
   DashboardStatsOut,
   DispatchActionsApiV1ActionsDispatchPostParams,
+  DocumentConfirmRequest,
+  DocumentUploadIntentRequest,
+  DocumentUploadIntentResponse,
   EngagementEventCreate,
   EscalationReportOut,
   ExpenseCreate,
@@ -90,10 +99,12 @@ import type {
   KYCReviewActionRequest,
   KYCSubmissionRequest,
   LeadCreate,
+  LeadFICADocumentResponse,
   LeadOut,
   LeadUpdate,
   LegacyPlaceOut,
   ListActiveAdvertisementsApiV1AdvertisementsPublicGetParams,
+  ListAffiliateOffersApiV1AffiliatesOffersGetParams,
   ListCapturesApiV1ContinuityCapturesGetParams,
   ListCategoriesApiV1CategoriesGet200Item,
   ListCategoriesApiV1CategoriesGetParams,
@@ -124,6 +135,8 @@ import type {
   OpportunityOut,
   OpportunityUpdate,
   OrderDetailResponse,
+  POPIAConsentRequest,
+  POPIAConsentResponse,
   PayfastCreatePayload,
   PayfastCreateResponse,
   PaymentIntentCreate,
@@ -144,6 +157,7 @@ import type {
   ProofOfPaymentOut,
   PublicProfileOut,
   PublicProfilesResponse,
+  PurgeExpiredDocumentsApiV1AffiliatesLeadsDocumentsPurgeExpiredPostParams,
   QuoteCreate,
   QuoteDraftFromRequestCreate,
   QuoteOut,
@@ -161,6 +175,7 @@ import type {
   SettlementActionRequest,
   SetupFeeReview,
   ShareResponseOut,
+  SignedViewUrlResponse,
   StartSimulationApiV1SimulationsStartPostBody,
   StewardAnnotationCreate,
   StewardAnnotationOut,
@@ -168,12 +183,15 @@ import type {
   TimelineEventCreate,
   TimelineEventOut,
   Token,
+  TrackAffiliateClickApiV1AffiliatesClickOfferSlugGetParams,
   TreasuryAnalyticsOut,
   TreasurySummaryOut,
   TreasuryTransactionOut,
   UserCreate,
   UserLogin,
   UserOut,
+  VehicleFunnelLeadCreate,
+  VehicleFunnelLeadOut,
   VerifyPaymentManualApiV1FinanceReconcileVerifyPostParams
 } from './models';
 
@@ -17581,6 +17599,1383 @@ export function useGetCategoriesForTypeApiV1CategoriesBusinessTypeGet<TData = Aw
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getGetCategoriesForTypeApiV1CategoriesBusinessTypeGetQueryOptions(businessType,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+
+/**
+ * Returns active affiliate commercial offers with full payout models and pre-qualification criteria.
+ * @summary List Affiliate Offers
+ */
+export const listAffiliateOffersApiV1AffiliatesOffersGet = (
+    params?: ListAffiliateOffersApiV1AffiliatesOffersGetParams,
+ options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<AffiliateOfferOut[]>(
+      {url: `/api/v1/affiliates/offers`, method: 'GET',
+        params, signal
+    },
+      options);
+    }
+  
+
+
+
+export const getListAffiliateOffersApiV1AffiliatesOffersGetQueryKey = (params?: ListAffiliateOffersApiV1AffiliatesOffersGetParams,) => {
+    return [
+    `/api/v1/affiliates/offers`, ...(params ? [params]: [])
+    ] as const;
+    }
+
+    
+export const getListAffiliateOffersApiV1AffiliatesOffersGetQueryOptions = <TData = Awaited<ReturnType<typeof listAffiliateOffersApiV1AffiliatesOffersGet>>, TError = HTTPValidationError>(params?: ListAffiliateOffersApiV1AffiliatesOffersGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAffiliateOffersApiV1AffiliatesOffersGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListAffiliateOffersApiV1AffiliatesOffersGetQueryKey(params);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listAffiliateOffersApiV1AffiliatesOffersGet>>> = ({ signal }) => listAffiliateOffersApiV1AffiliatesOffersGet(params, requestOptions, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listAffiliateOffersApiV1AffiliatesOffersGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ListAffiliateOffersApiV1AffiliatesOffersGetQueryResult = NonNullable<Awaited<ReturnType<typeof listAffiliateOffersApiV1AffiliatesOffersGet>>>
+export type ListAffiliateOffersApiV1AffiliatesOffersGetQueryError = HTTPValidationError
+
+
+export function useListAffiliateOffersApiV1AffiliatesOffersGet<TData = Awaited<ReturnType<typeof listAffiliateOffersApiV1AffiliatesOffersGet>>, TError = HTTPValidationError>(
+ params: undefined |  ListAffiliateOffersApiV1AffiliatesOffersGetParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAffiliateOffersApiV1AffiliatesOffersGet>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listAffiliateOffersApiV1AffiliatesOffersGet>>,
+          TError,
+          Awaited<ReturnType<typeof listAffiliateOffersApiV1AffiliatesOffersGet>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListAffiliateOffersApiV1AffiliatesOffersGet<TData = Awaited<ReturnType<typeof listAffiliateOffersApiV1AffiliatesOffersGet>>, TError = HTTPValidationError>(
+ params?: ListAffiliateOffersApiV1AffiliatesOffersGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAffiliateOffersApiV1AffiliatesOffersGet>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listAffiliateOffersApiV1AffiliatesOffersGet>>,
+          TError,
+          Awaited<ReturnType<typeof listAffiliateOffersApiV1AffiliatesOffersGet>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListAffiliateOffersApiV1AffiliatesOffersGet<TData = Awaited<ReturnType<typeof listAffiliateOffersApiV1AffiliatesOffersGet>>, TError = HTTPValidationError>(
+ params?: ListAffiliateOffersApiV1AffiliatesOffersGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAffiliateOffersApiV1AffiliatesOffersGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary List Affiliate Offers
+ */
+
+export function useListAffiliateOffersApiV1AffiliatesOffersGet<TData = Awaited<ReturnType<typeof listAffiliateOffersApiV1AffiliatesOffersGet>>, TError = HTTPValidationError>(
+ params?: ListAffiliateOffersApiV1AffiliatesOffersGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listAffiliateOffersApiV1AffiliatesOffersGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getListAffiliateOffersApiV1AffiliatesOffersGetQueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+
+/**
+ * Fetches a specific affiliate offer with targeting constraints and dynamic payout rules.
+ * @summary Get Affiliate Offer
+ */
+export const getAffiliateOfferApiV1AffiliatesOffersOfferIdGet = (
+    offerId: string,
+ options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<AffiliateOfferOut>(
+      {url: `/api/v1/affiliates/offers/${offerId}`, method: 'GET', signal
+    },
+      options);
+    }
+  
+
+
+
+export const getGetAffiliateOfferApiV1AffiliatesOffersOfferIdGetQueryKey = (offerId?: string,) => {
+    return [
+    `/api/v1/affiliates/offers/${offerId}`
+    ] as const;
+    }
+
+    
+export const getGetAffiliateOfferApiV1AffiliatesOffersOfferIdGetQueryOptions = <TData = Awaited<ReturnType<typeof getAffiliateOfferApiV1AffiliatesOffersOfferIdGet>>, TError = HTTPValidationError>(offerId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAffiliateOfferApiV1AffiliatesOffersOfferIdGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAffiliateOfferApiV1AffiliatesOffersOfferIdGetQueryKey(offerId);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAffiliateOfferApiV1AffiliatesOffersOfferIdGet>>> = ({ signal }) => getAffiliateOfferApiV1AffiliatesOffersOfferIdGet(offerId, requestOptions, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, enabled: !!(offerId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAffiliateOfferApiV1AffiliatesOffersOfferIdGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetAffiliateOfferApiV1AffiliatesOffersOfferIdGetQueryResult = NonNullable<Awaited<ReturnType<typeof getAffiliateOfferApiV1AffiliatesOffersOfferIdGet>>>
+export type GetAffiliateOfferApiV1AffiliatesOffersOfferIdGetQueryError = HTTPValidationError
+
+
+export function useGetAffiliateOfferApiV1AffiliatesOffersOfferIdGet<TData = Awaited<ReturnType<typeof getAffiliateOfferApiV1AffiliatesOffersOfferIdGet>>, TError = HTTPValidationError>(
+ offerId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAffiliateOfferApiV1AffiliatesOffersOfferIdGet>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAffiliateOfferApiV1AffiliatesOffersOfferIdGet>>,
+          TError,
+          Awaited<ReturnType<typeof getAffiliateOfferApiV1AffiliatesOffersOfferIdGet>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAffiliateOfferApiV1AffiliatesOffersOfferIdGet<TData = Awaited<ReturnType<typeof getAffiliateOfferApiV1AffiliatesOffersOfferIdGet>>, TError = HTTPValidationError>(
+ offerId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAffiliateOfferApiV1AffiliatesOffersOfferIdGet>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getAffiliateOfferApiV1AffiliatesOffersOfferIdGet>>,
+          TError,
+          Awaited<ReturnType<typeof getAffiliateOfferApiV1AffiliatesOffersOfferIdGet>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetAffiliateOfferApiV1AffiliatesOffersOfferIdGet<TData = Awaited<ReturnType<typeof getAffiliateOfferApiV1AffiliatesOffersOfferIdGet>>, TError = HTTPValidationError>(
+ offerId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAffiliateOfferApiV1AffiliatesOffersOfferIdGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get Affiliate Offer
+ */
+
+export function useGetAffiliateOfferApiV1AffiliatesOffersOfferIdGet<TData = Awaited<ReturnType<typeof getAffiliateOfferApiV1AffiliatesOffersOfferIdGet>>, TError = HTTPValidationError>(
+ offerId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAffiliateOfferApiV1AffiliatesOffersOfferIdGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetAffiliateOfferApiV1AffiliatesOffersOfferIdGetQueryOptions(offerId,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+
+/**
+ * Submits a customer lead for an affiliate product:
+- Pre-qualifies against Sheet 2 rules (Income, Age, Employment, SA Citizen, Bank Account, Driver License).
+- Enforces 90-day deduplication window.
+- Tags merchant account attribution.
+- Emits immutable continuity audit event.
+ * @summary Submit Lead
+ */
+export const submitLeadApiV1AffiliatesLeadsSubmitPost = (
+    affiliateLeadCreate: AffiliateLeadCreate,
+ options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<AffiliateLeadOut>(
+      {url: `/api/v1/affiliates/leads/submit`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: affiliateLeadCreate, signal
+    },
+      options);
+    }
+  
+
+
+export const getSubmitLeadApiV1AffiliatesLeadsSubmitPostMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof submitLeadApiV1AffiliatesLeadsSubmitPost>>, TError,{data: AffiliateLeadCreate}, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof submitLeadApiV1AffiliatesLeadsSubmitPost>>, TError,{data: AffiliateLeadCreate}, TContext> => {
+
+const mutationKey = ['submitLeadApiV1AffiliatesLeadsSubmitPost'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof submitLeadApiV1AffiliatesLeadsSubmitPost>>, {data: AffiliateLeadCreate}> = (props) => {
+          const {data} = props ?? {};
+
+          return  submitLeadApiV1AffiliatesLeadsSubmitPost(data,requestOptions)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SubmitLeadApiV1AffiliatesLeadsSubmitPostMutationResult = NonNullable<Awaited<ReturnType<typeof submitLeadApiV1AffiliatesLeadsSubmitPost>>>
+    export type SubmitLeadApiV1AffiliatesLeadsSubmitPostMutationBody = AffiliateLeadCreate
+    export type SubmitLeadApiV1AffiliatesLeadsSubmitPostMutationError = HTTPValidationError
+
+    /**
+ * @summary Submit Lead
+ */
+export const useSubmitLeadApiV1AffiliatesLeadsSubmitPost = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof submitLeadApiV1AffiliatesLeadsSubmitPost>>, TError,{data: AffiliateLeadCreate}, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof submitLeadApiV1AffiliatesLeadsSubmitPost>>,
+        TError,
+        {data: AffiliateLeadCreate},
+        TContext
+      > => {
+
+      const mutationOptions = getSubmitLeadApiV1AffiliatesLeadsSubmitPostMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    
+/**
+ * Lists submitted affiliate leads for the authenticated merchant with conversion and payout attribution.
+ * @summary List My Leads
+ */
+export const listMyLeadsApiV1AffiliatesLeadsMyLeadsGet = (
+    
+ options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<AffiliateLeadOut[]>(
+      {url: `/api/v1/affiliates/leads/my-leads`, method: 'GET', signal
+    },
+      options);
+    }
+  
+
+
+
+export const getListMyLeadsApiV1AffiliatesLeadsMyLeadsGetQueryKey = () => {
+    return [
+    `/api/v1/affiliates/leads/my-leads`
+    ] as const;
+    }
+
+    
+export const getListMyLeadsApiV1AffiliatesLeadsMyLeadsGetQueryOptions = <TData = Awaited<ReturnType<typeof listMyLeadsApiV1AffiliatesLeadsMyLeadsGet>>, TError = HTTPValidationError>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listMyLeadsApiV1AffiliatesLeadsMyLeadsGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListMyLeadsApiV1AffiliatesLeadsMyLeadsGetQueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listMyLeadsApiV1AffiliatesLeadsMyLeadsGet>>> = ({ signal }) => listMyLeadsApiV1AffiliatesLeadsMyLeadsGet(requestOptions, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listMyLeadsApiV1AffiliatesLeadsMyLeadsGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ListMyLeadsApiV1AffiliatesLeadsMyLeadsGetQueryResult = NonNullable<Awaited<ReturnType<typeof listMyLeadsApiV1AffiliatesLeadsMyLeadsGet>>>
+export type ListMyLeadsApiV1AffiliatesLeadsMyLeadsGetQueryError = HTTPValidationError
+
+
+export function useListMyLeadsApiV1AffiliatesLeadsMyLeadsGet<TData = Awaited<ReturnType<typeof listMyLeadsApiV1AffiliatesLeadsMyLeadsGet>>, TError = HTTPValidationError>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listMyLeadsApiV1AffiliatesLeadsMyLeadsGet>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listMyLeadsApiV1AffiliatesLeadsMyLeadsGet>>,
+          TError,
+          Awaited<ReturnType<typeof listMyLeadsApiV1AffiliatesLeadsMyLeadsGet>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListMyLeadsApiV1AffiliatesLeadsMyLeadsGet<TData = Awaited<ReturnType<typeof listMyLeadsApiV1AffiliatesLeadsMyLeadsGet>>, TError = HTTPValidationError>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listMyLeadsApiV1AffiliatesLeadsMyLeadsGet>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listMyLeadsApiV1AffiliatesLeadsMyLeadsGet>>,
+          TError,
+          Awaited<ReturnType<typeof listMyLeadsApiV1AffiliatesLeadsMyLeadsGet>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListMyLeadsApiV1AffiliatesLeadsMyLeadsGet<TData = Awaited<ReturnType<typeof listMyLeadsApiV1AffiliatesLeadsMyLeadsGet>>, TError = HTTPValidationError>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listMyLeadsApiV1AffiliatesLeadsMyLeadsGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary List My Leads
+ */
+
+export function useListMyLeadsApiV1AffiliatesLeadsMyLeadsGet<TData = Awaited<ReturnType<typeof listMyLeadsApiV1AffiliatesLeadsMyLeadsGet>>, TError = HTTPValidationError>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listMyLeadsApiV1AffiliatesLeadsMyLeadsGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getListMyLeadsApiV1AffiliatesLeadsMyLeadsGetQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+
+/**
+ * S2S / Webhook postback endpoint for conversion attribution:
+- Matches lead by lead_id, external_lead_id, phone, or national_id.
+- Computes merchant commission split (70% standard).
+- Emits 'commission_approved' and 'commission_paid' continuity events to credit merchant ledger.
+ * @summary Handle Conversion Postback
+ */
+export const handleConversionPostbackApiV1AffiliatesPostbackPost = (
+    affiliateConversionPostback: AffiliateConversionPostback,
+ options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<AffiliateLeadOut>(
+      {url: `/api/v1/affiliates/postback`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: affiliateConversionPostback, signal
+    },
+      options);
+    }
+  
+
+
+export const getHandleConversionPostbackApiV1AffiliatesPostbackPostMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof handleConversionPostbackApiV1AffiliatesPostbackPost>>, TError,{data: AffiliateConversionPostback}, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof handleConversionPostbackApiV1AffiliatesPostbackPost>>, TError,{data: AffiliateConversionPostback}, TContext> => {
+
+const mutationKey = ['handleConversionPostbackApiV1AffiliatesPostbackPost'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof handleConversionPostbackApiV1AffiliatesPostbackPost>>, {data: AffiliateConversionPostback}> = (props) => {
+          const {data} = props ?? {};
+
+          return  handleConversionPostbackApiV1AffiliatesPostbackPost(data,requestOptions)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type HandleConversionPostbackApiV1AffiliatesPostbackPostMutationResult = NonNullable<Awaited<ReturnType<typeof handleConversionPostbackApiV1AffiliatesPostbackPost>>>
+    export type HandleConversionPostbackApiV1AffiliatesPostbackPostMutationBody = AffiliateConversionPostback
+    export type HandleConversionPostbackApiV1AffiliatesPostbackPostMutationError = HTTPValidationError
+
+    /**
+ * @summary Handle Conversion Postback
+ */
+export const useHandleConversionPostbackApiV1AffiliatesPostbackPost = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof handleConversionPostbackApiV1AffiliatesPostbackPost>>, TError,{data: AffiliateConversionPostback}, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof handleConversionPostbackApiV1AffiliatesPostbackPost>>,
+        TError,
+        {data: AffiliateConversionPostback},
+        TContext
+      > => {
+
+      const mutationOptions = getHandleConversionPostbackApiV1AffiliatesPostbackPostMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    
+/**
+ * Dynamic tracking click generator:
+- Resolves offer by slug (e.g. hostafrica-cloud-domains, easyequities-invest).
+- Records an immutable AffiliateClick event with visitor IP and merchant attribution.
+- Redirects (HTTP 302) to the partner referral URL with sub_id / tracking code.
+ * @summary Track Affiliate Click
+ */
+export const trackAffiliateClickApiV1AffiliatesClickOfferSlugGet = (
+    offerSlug: string,
+    params: TrackAffiliateClickApiV1AffiliatesClickOfferSlugGetParams,
+ options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<unknown>(
+      {url: `/api/v1/affiliates/click/${offerSlug}`, method: 'GET',
+        params, signal
+    },
+      options);
+    }
+  
+
+
+
+export const getTrackAffiliateClickApiV1AffiliatesClickOfferSlugGetQueryKey = (offerSlug?: string,
+    params?: TrackAffiliateClickApiV1AffiliatesClickOfferSlugGetParams,) => {
+    return [
+    `/api/v1/affiliates/click/${offerSlug}`, ...(params ? [params]: [])
+    ] as const;
+    }
+
+    
+export const getTrackAffiliateClickApiV1AffiliatesClickOfferSlugGetQueryOptions = <TData = Awaited<ReturnType<typeof trackAffiliateClickApiV1AffiliatesClickOfferSlugGet>>, TError = HTTPValidationError>(offerSlug: string,
+    params: TrackAffiliateClickApiV1AffiliatesClickOfferSlugGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof trackAffiliateClickApiV1AffiliatesClickOfferSlugGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getTrackAffiliateClickApiV1AffiliatesClickOfferSlugGetQueryKey(offerSlug,params);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof trackAffiliateClickApiV1AffiliatesClickOfferSlugGet>>> = ({ signal }) => trackAffiliateClickApiV1AffiliatesClickOfferSlugGet(offerSlug,params, requestOptions, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, enabled: !!(offerSlug), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof trackAffiliateClickApiV1AffiliatesClickOfferSlugGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type TrackAffiliateClickApiV1AffiliatesClickOfferSlugGetQueryResult = NonNullable<Awaited<ReturnType<typeof trackAffiliateClickApiV1AffiliatesClickOfferSlugGet>>>
+export type TrackAffiliateClickApiV1AffiliatesClickOfferSlugGetQueryError = HTTPValidationError
+
+
+export function useTrackAffiliateClickApiV1AffiliatesClickOfferSlugGet<TData = Awaited<ReturnType<typeof trackAffiliateClickApiV1AffiliatesClickOfferSlugGet>>, TError = HTTPValidationError>(
+ offerSlug: string,
+    params: TrackAffiliateClickApiV1AffiliatesClickOfferSlugGetParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof trackAffiliateClickApiV1AffiliatesClickOfferSlugGet>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof trackAffiliateClickApiV1AffiliatesClickOfferSlugGet>>,
+          TError,
+          Awaited<ReturnType<typeof trackAffiliateClickApiV1AffiliatesClickOfferSlugGet>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useTrackAffiliateClickApiV1AffiliatesClickOfferSlugGet<TData = Awaited<ReturnType<typeof trackAffiliateClickApiV1AffiliatesClickOfferSlugGet>>, TError = HTTPValidationError>(
+ offerSlug: string,
+    params: TrackAffiliateClickApiV1AffiliatesClickOfferSlugGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof trackAffiliateClickApiV1AffiliatesClickOfferSlugGet>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof trackAffiliateClickApiV1AffiliatesClickOfferSlugGet>>,
+          TError,
+          Awaited<ReturnType<typeof trackAffiliateClickApiV1AffiliatesClickOfferSlugGet>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useTrackAffiliateClickApiV1AffiliatesClickOfferSlugGet<TData = Awaited<ReturnType<typeof trackAffiliateClickApiV1AffiliatesClickOfferSlugGet>>, TError = HTTPValidationError>(
+ offerSlug: string,
+    params: TrackAffiliateClickApiV1AffiliatesClickOfferSlugGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof trackAffiliateClickApiV1AffiliatesClickOfferSlugGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Track Affiliate Click
+ */
+
+export function useTrackAffiliateClickApiV1AffiliatesClickOfferSlugGet<TData = Awaited<ReturnType<typeof trackAffiliateClickApiV1AffiliatesClickOfferSlugGet>>, TError = HTTPValidationError>(
+ offerSlug: string,
+    params: TrackAffiliateClickApiV1AffiliatesClickOfferSlugGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof trackAffiliateClickApiV1AffiliatesClickOfferSlugGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getTrackAffiliateClickApiV1AffiliatesClickOfferSlugGetQueryOptions(offerSlug,params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+
+/**
+ * Returns the trackable proxy URL for the authenticated merchant to share via WhatsApp/SMS.
+ * @summary Get Merchant Referral Link
+ */
+export const getMerchantReferralLinkApiV1AffiliatesReferralLinkOfferSlugGet = (
+    offerSlug: string,
+ options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<unknown>(
+      {url: `/api/v1/affiliates/referral-link/${offerSlug}`, method: 'GET', signal
+    },
+      options);
+    }
+  
+
+
+
+export const getGetMerchantReferralLinkApiV1AffiliatesReferralLinkOfferSlugGetQueryKey = (offerSlug?: string,) => {
+    return [
+    `/api/v1/affiliates/referral-link/${offerSlug}`
+    ] as const;
+    }
+
+    
+export const getGetMerchantReferralLinkApiV1AffiliatesReferralLinkOfferSlugGetQueryOptions = <TData = Awaited<ReturnType<typeof getMerchantReferralLinkApiV1AffiliatesReferralLinkOfferSlugGet>>, TError = HTTPValidationError>(offerSlug: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getMerchantReferralLinkApiV1AffiliatesReferralLinkOfferSlugGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetMerchantReferralLinkApiV1AffiliatesReferralLinkOfferSlugGetQueryKey(offerSlug);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getMerchantReferralLinkApiV1AffiliatesReferralLinkOfferSlugGet>>> = ({ signal }) => getMerchantReferralLinkApiV1AffiliatesReferralLinkOfferSlugGet(offerSlug, requestOptions, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, enabled: !!(offerSlug), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getMerchantReferralLinkApiV1AffiliatesReferralLinkOfferSlugGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetMerchantReferralLinkApiV1AffiliatesReferralLinkOfferSlugGetQueryResult = NonNullable<Awaited<ReturnType<typeof getMerchantReferralLinkApiV1AffiliatesReferralLinkOfferSlugGet>>>
+export type GetMerchantReferralLinkApiV1AffiliatesReferralLinkOfferSlugGetQueryError = HTTPValidationError
+
+
+export function useGetMerchantReferralLinkApiV1AffiliatesReferralLinkOfferSlugGet<TData = Awaited<ReturnType<typeof getMerchantReferralLinkApiV1AffiliatesReferralLinkOfferSlugGet>>, TError = HTTPValidationError>(
+ offerSlug: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getMerchantReferralLinkApiV1AffiliatesReferralLinkOfferSlugGet>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getMerchantReferralLinkApiV1AffiliatesReferralLinkOfferSlugGet>>,
+          TError,
+          Awaited<ReturnType<typeof getMerchantReferralLinkApiV1AffiliatesReferralLinkOfferSlugGet>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetMerchantReferralLinkApiV1AffiliatesReferralLinkOfferSlugGet<TData = Awaited<ReturnType<typeof getMerchantReferralLinkApiV1AffiliatesReferralLinkOfferSlugGet>>, TError = HTTPValidationError>(
+ offerSlug: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getMerchantReferralLinkApiV1AffiliatesReferralLinkOfferSlugGet>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getMerchantReferralLinkApiV1AffiliatesReferralLinkOfferSlugGet>>,
+          TError,
+          Awaited<ReturnType<typeof getMerchantReferralLinkApiV1AffiliatesReferralLinkOfferSlugGet>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetMerchantReferralLinkApiV1AffiliatesReferralLinkOfferSlugGet<TData = Awaited<ReturnType<typeof getMerchantReferralLinkApiV1AffiliatesReferralLinkOfferSlugGet>>, TError = HTTPValidationError>(
+ offerSlug: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getMerchantReferralLinkApiV1AffiliatesReferralLinkOfferSlugGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get Merchant Referral Link
+ */
+
+export function useGetMerchantReferralLinkApiV1AffiliatesReferralLinkOfferSlugGet<TData = Awaited<ReturnType<typeof getMerchantReferralLinkApiV1AffiliatesReferralLinkOfferSlugGet>>, TError = HTTPValidationError>(
+ offerSlug: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getMerchantReferralLinkApiV1AffiliatesReferralLinkOfferSlugGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetMerchantReferralLinkApiV1AffiliatesReferralLinkOfferSlugGetQueryOptions(offerSlug,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+
+/**
+ * Admin reconciliation endpoint for monthly affiliate reports (HOSTAFRICA, EasyEquities):
+- Records statement in affiliate_partner_statements.
+- Emits 'affiliate_statement_reconciled' continuity event.
+- Emits financial event logging platform auxiliary revenue inflow.
+ * @summary Ingest Affiliate Monthly Statement
+ */
+export const ingestAffiliateMonthlyStatementApiV1AffiliatesStatementsIngestPost = (
+    affiliateStatementIngest: AffiliateStatementIngest,
+ options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<AffiliateStatementOut>(
+      {url: `/api/v1/affiliates/statements/ingest`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: affiliateStatementIngest, signal
+    },
+      options);
+    }
+  
+
+
+export const getIngestAffiliateMonthlyStatementApiV1AffiliatesStatementsIngestPostMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof ingestAffiliateMonthlyStatementApiV1AffiliatesStatementsIngestPost>>, TError,{data: AffiliateStatementIngest}, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof ingestAffiliateMonthlyStatementApiV1AffiliatesStatementsIngestPost>>, TError,{data: AffiliateStatementIngest}, TContext> => {
+
+const mutationKey = ['ingestAffiliateMonthlyStatementApiV1AffiliatesStatementsIngestPost'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof ingestAffiliateMonthlyStatementApiV1AffiliatesStatementsIngestPost>>, {data: AffiliateStatementIngest}> = (props) => {
+          const {data} = props ?? {};
+
+          return  ingestAffiliateMonthlyStatementApiV1AffiliatesStatementsIngestPost(data,requestOptions)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type IngestAffiliateMonthlyStatementApiV1AffiliatesStatementsIngestPostMutationResult = NonNullable<Awaited<ReturnType<typeof ingestAffiliateMonthlyStatementApiV1AffiliatesStatementsIngestPost>>>
+    export type IngestAffiliateMonthlyStatementApiV1AffiliatesStatementsIngestPostMutationBody = AffiliateStatementIngest
+    export type IngestAffiliateMonthlyStatementApiV1AffiliatesStatementsIngestPostMutationError = HTTPValidationError
+
+    /**
+ * @summary Ingest Affiliate Monthly Statement
+ */
+export const useIngestAffiliateMonthlyStatementApiV1AffiliatesStatementsIngestPost = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof ingestAffiliateMonthlyStatementApiV1AffiliatesStatementsIngestPost>>, TError,{data: AffiliateStatementIngest}, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof ingestAffiliateMonthlyStatementApiV1AffiliatesStatementsIngestPost>>,
+        TError,
+        {data: AffiliateStatementIngest},
+        TContext
+      > => {
+
+      const mutationOptions = getIngestAffiliateMonthlyStatementApiV1AffiliatesStatementsIngestPostMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    
+/**
+ * Automotive Multi-Monetization Funnel Endpoint:
+1. Pre-qualifies customer against Mad Cars Dealership criteria (Income R10k+, Code B license, employed).
+2. Submits primary lead to Mad Cars Dealership (R200 CPL / R2,500 CPS).
+3. Automatically fans out to opted-in ancillary offers:
+   - Car Insurance White Label (R70 CPL)
+   - Vehicle Tracker White Label (R50 CPL)
+   - Cartrack Dashcams (R55 CPL)
+   - Motor Warranty White Label (R50 CPL)
+4. Calculates total potential qualified commission across the chain (up to R475+).
+5. Tags merchant owner attribution and emits continuity events.
+ * @summary Submit Vehicle Funnel Inquiry
+ */
+export const submitVehicleFunnelInquiryApiV1AffiliatesLeadsVehicleInquiryPost = (
+    vehicleFunnelLeadCreate: VehicleFunnelLeadCreate,
+ options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<VehicleFunnelLeadOut>(
+      {url: `/api/v1/affiliates/leads/vehicle-inquiry`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: vehicleFunnelLeadCreate, signal
+    },
+      options);
+    }
+  
+
+
+export const getSubmitVehicleFunnelInquiryApiV1AffiliatesLeadsVehicleInquiryPostMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof submitVehicleFunnelInquiryApiV1AffiliatesLeadsVehicleInquiryPost>>, TError,{data: VehicleFunnelLeadCreate}, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof submitVehicleFunnelInquiryApiV1AffiliatesLeadsVehicleInquiryPost>>, TError,{data: VehicleFunnelLeadCreate}, TContext> => {
+
+const mutationKey = ['submitVehicleFunnelInquiryApiV1AffiliatesLeadsVehicleInquiryPost'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof submitVehicleFunnelInquiryApiV1AffiliatesLeadsVehicleInquiryPost>>, {data: VehicleFunnelLeadCreate}> = (props) => {
+          const {data} = props ?? {};
+
+          return  submitVehicleFunnelInquiryApiV1AffiliatesLeadsVehicleInquiryPost(data,requestOptions)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SubmitVehicleFunnelInquiryApiV1AffiliatesLeadsVehicleInquiryPostMutationResult = NonNullable<Awaited<ReturnType<typeof submitVehicleFunnelInquiryApiV1AffiliatesLeadsVehicleInquiryPost>>>
+    export type SubmitVehicleFunnelInquiryApiV1AffiliatesLeadsVehicleInquiryPostMutationBody = VehicleFunnelLeadCreate
+    export type SubmitVehicleFunnelInquiryApiV1AffiliatesLeadsVehicleInquiryPostMutationError = HTTPValidationError
+
+    /**
+ * @summary Submit Vehicle Funnel Inquiry
+ */
+export const useSubmitVehicleFunnelInquiryApiV1AffiliatesLeadsVehicleInquiryPost = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof submitVehicleFunnelInquiryApiV1AffiliatesLeadsVehicleInquiryPost>>, TError,{data: VehicleFunnelLeadCreate}, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof submitVehicleFunnelInquiryApiV1AffiliatesLeadsVehicleInquiryPost>>,
+        TError,
+        {data: VehicleFunnelLeadCreate},
+        TContext
+      > => {
+
+      const mutationOptions = getSubmitVehicleFunnelInquiryApiV1AffiliatesLeadsVehicleInquiryPostMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    
+/**
+ * Records statutory POPIA explicit consent prior to processing credit/vehicle inquiries or documents.
+ * @summary Record Popia Consent
+ */
+export const recordPopiaConsentApiV1AffiliatesLeadsLeadIdConsentPost = (
+    leadId: string,
+    pOPIAConsentRequest: POPIAConsentRequest,
+ options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<POPIAConsentResponse>(
+      {url: `/api/v1/affiliates/leads/${leadId}/consent`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: pOPIAConsentRequest, signal
+    },
+      options);
+    }
+  
+
+
+export const getRecordPopiaConsentApiV1AffiliatesLeadsLeadIdConsentPostMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof recordPopiaConsentApiV1AffiliatesLeadsLeadIdConsentPost>>, TError,{leadId: string;data: POPIAConsentRequest}, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof recordPopiaConsentApiV1AffiliatesLeadsLeadIdConsentPost>>, TError,{leadId: string;data: POPIAConsentRequest}, TContext> => {
+
+const mutationKey = ['recordPopiaConsentApiV1AffiliatesLeadsLeadIdConsentPost'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof recordPopiaConsentApiV1AffiliatesLeadsLeadIdConsentPost>>, {leadId: string;data: POPIAConsentRequest}> = (props) => {
+          const {leadId,data} = props ?? {};
+
+          return  recordPopiaConsentApiV1AffiliatesLeadsLeadIdConsentPost(leadId,data,requestOptions)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type RecordPopiaConsentApiV1AffiliatesLeadsLeadIdConsentPostMutationResult = NonNullable<Awaited<ReturnType<typeof recordPopiaConsentApiV1AffiliatesLeadsLeadIdConsentPost>>>
+    export type RecordPopiaConsentApiV1AffiliatesLeadsLeadIdConsentPostMutationBody = POPIAConsentRequest
+    export type RecordPopiaConsentApiV1AffiliatesLeadsLeadIdConsentPostMutationError = HTTPValidationError
+
+    /**
+ * @summary Record Popia Consent
+ */
+export const useRecordPopiaConsentApiV1AffiliatesLeadsLeadIdConsentPost = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof recordPopiaConsentApiV1AffiliatesLeadsLeadIdConsentPost>>, TError,{leadId: string;data: POPIAConsentRequest}, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof recordPopiaConsentApiV1AffiliatesLeadsLeadIdConsentPost>>,
+        TError,
+        {leadId: string;data: POPIAConsentRequest},
+        TContext
+      > => {
+
+      const mutationOptions = getRecordPopiaConsentApiV1AffiliatesLeadsLeadIdConsentPostMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    
+/**
+ * Issues a direct-to-storage pre-signed upload URL.
+STRICT GATE: Blocks with 403 Forbidden if POPIA credit check consent has not been logged.
+ * @summary Request Document Upload Intent
+ */
+export const requestDocumentUploadIntentApiV1AffiliatesLeadsLeadIdDocumentsUploadIntentPost = (
+    leadId: string,
+    documentUploadIntentRequest: DocumentUploadIntentRequest,
+ options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<DocumentUploadIntentResponse>(
+      {url: `/api/v1/affiliates/leads/${leadId}/documents/upload-intent`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: documentUploadIntentRequest, signal
+    },
+      options);
+    }
+  
+
+
+export const getRequestDocumentUploadIntentApiV1AffiliatesLeadsLeadIdDocumentsUploadIntentPostMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof requestDocumentUploadIntentApiV1AffiliatesLeadsLeadIdDocumentsUploadIntentPost>>, TError,{leadId: string;data: DocumentUploadIntentRequest}, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof requestDocumentUploadIntentApiV1AffiliatesLeadsLeadIdDocumentsUploadIntentPost>>, TError,{leadId: string;data: DocumentUploadIntentRequest}, TContext> => {
+
+const mutationKey = ['requestDocumentUploadIntentApiV1AffiliatesLeadsLeadIdDocumentsUploadIntentPost'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof requestDocumentUploadIntentApiV1AffiliatesLeadsLeadIdDocumentsUploadIntentPost>>, {leadId: string;data: DocumentUploadIntentRequest}> = (props) => {
+          const {leadId,data} = props ?? {};
+
+          return  requestDocumentUploadIntentApiV1AffiliatesLeadsLeadIdDocumentsUploadIntentPost(leadId,data,requestOptions)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type RequestDocumentUploadIntentApiV1AffiliatesLeadsLeadIdDocumentsUploadIntentPostMutationResult = NonNullable<Awaited<ReturnType<typeof requestDocumentUploadIntentApiV1AffiliatesLeadsLeadIdDocumentsUploadIntentPost>>>
+    export type RequestDocumentUploadIntentApiV1AffiliatesLeadsLeadIdDocumentsUploadIntentPostMutationBody = DocumentUploadIntentRequest
+    export type RequestDocumentUploadIntentApiV1AffiliatesLeadsLeadIdDocumentsUploadIntentPostMutationError = HTTPValidationError
+
+    /**
+ * @summary Request Document Upload Intent
+ */
+export const useRequestDocumentUploadIntentApiV1AffiliatesLeadsLeadIdDocumentsUploadIntentPost = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof requestDocumentUploadIntentApiV1AffiliatesLeadsLeadIdDocumentsUploadIntentPost>>, TError,{leadId: string;data: DocumentUploadIntentRequest}, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof requestDocumentUploadIntentApiV1AffiliatesLeadsLeadIdDocumentsUploadIntentPost>>,
+        TError,
+        {leadId: string;data: DocumentUploadIntentRequest},
+        TContext
+      > => {
+
+      const mutationOptions = getRequestDocumentUploadIntentApiV1AffiliatesLeadsLeadIdDocumentsUploadIntentPostMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    
+/**
+ * Confirms direct storage upload and records client-calculated SHA-256 integrity hash.
+ * @summary Confirm Document Upload
+ */
+export const confirmDocumentUploadApiV1AffiliatesLeadsLeadIdDocumentsDocumentIdConfirmPost = (
+    leadId: string,
+    documentId: string,
+    documentConfirmRequest: DocumentConfirmRequest,
+ options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<LeadFICADocumentResponse>(
+      {url: `/api/v1/affiliates/leads/${leadId}/documents/${documentId}/confirm`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: documentConfirmRequest, signal
+    },
+      options);
+    }
+  
+
+
+export const getConfirmDocumentUploadApiV1AffiliatesLeadsLeadIdDocumentsDocumentIdConfirmPostMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof confirmDocumentUploadApiV1AffiliatesLeadsLeadIdDocumentsDocumentIdConfirmPost>>, TError,{leadId: string;documentId: string;data: DocumentConfirmRequest}, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof confirmDocumentUploadApiV1AffiliatesLeadsLeadIdDocumentsDocumentIdConfirmPost>>, TError,{leadId: string;documentId: string;data: DocumentConfirmRequest}, TContext> => {
+
+const mutationKey = ['confirmDocumentUploadApiV1AffiliatesLeadsLeadIdDocumentsDocumentIdConfirmPost'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof confirmDocumentUploadApiV1AffiliatesLeadsLeadIdDocumentsDocumentIdConfirmPost>>, {leadId: string;documentId: string;data: DocumentConfirmRequest}> = (props) => {
+          const {leadId,documentId,data} = props ?? {};
+
+          return  confirmDocumentUploadApiV1AffiliatesLeadsLeadIdDocumentsDocumentIdConfirmPost(leadId,documentId,data,requestOptions)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ConfirmDocumentUploadApiV1AffiliatesLeadsLeadIdDocumentsDocumentIdConfirmPostMutationResult = NonNullable<Awaited<ReturnType<typeof confirmDocumentUploadApiV1AffiliatesLeadsLeadIdDocumentsDocumentIdConfirmPost>>>
+    export type ConfirmDocumentUploadApiV1AffiliatesLeadsLeadIdDocumentsDocumentIdConfirmPostMutationBody = DocumentConfirmRequest
+    export type ConfirmDocumentUploadApiV1AffiliatesLeadsLeadIdDocumentsDocumentIdConfirmPostMutationError = HTTPValidationError
+
+    /**
+ * @summary Confirm Document Upload
+ */
+export const useConfirmDocumentUploadApiV1AffiliatesLeadsLeadIdDocumentsDocumentIdConfirmPost = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof confirmDocumentUploadApiV1AffiliatesLeadsLeadIdDocumentsDocumentIdConfirmPost>>, TError,{leadId: string;documentId: string;data: DocumentConfirmRequest}, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof confirmDocumentUploadApiV1AffiliatesLeadsLeadIdDocumentsDocumentIdConfirmPost>>,
+        TError,
+        {leadId: string;documentId: string;data: DocumentConfirmRequest},
+        TContext
+      > => {
+
+      const mutationOptions = getConfirmDocumentUploadApiV1AffiliatesLeadsLeadIdDocumentsDocumentIdConfirmPostMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    
+/**
+ * Lists uploaded FICA documents for an inquiry without exposing unauthenticated raw files.
+ * @summary List Lead Documents
+ */
+export const listLeadDocumentsApiV1AffiliatesLeadsLeadIdDocumentsGet = (
+    leadId: string,
+ options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<LeadFICADocumentResponse[]>(
+      {url: `/api/v1/affiliates/leads/${leadId}/documents`, method: 'GET', signal
+    },
+      options);
+    }
+  
+
+
+
+export const getListLeadDocumentsApiV1AffiliatesLeadsLeadIdDocumentsGetQueryKey = (leadId?: string,) => {
+    return [
+    `/api/v1/affiliates/leads/${leadId}/documents`
+    ] as const;
+    }
+
+    
+export const getListLeadDocumentsApiV1AffiliatesLeadsLeadIdDocumentsGetQueryOptions = <TData = Awaited<ReturnType<typeof listLeadDocumentsApiV1AffiliatesLeadsLeadIdDocumentsGet>>, TError = HTTPValidationError>(leadId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listLeadDocumentsApiV1AffiliatesLeadsLeadIdDocumentsGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListLeadDocumentsApiV1AffiliatesLeadsLeadIdDocumentsGetQueryKey(leadId);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listLeadDocumentsApiV1AffiliatesLeadsLeadIdDocumentsGet>>> = ({ signal }) => listLeadDocumentsApiV1AffiliatesLeadsLeadIdDocumentsGet(leadId, requestOptions, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, enabled: !!(leadId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listLeadDocumentsApiV1AffiliatesLeadsLeadIdDocumentsGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ListLeadDocumentsApiV1AffiliatesLeadsLeadIdDocumentsGetQueryResult = NonNullable<Awaited<ReturnType<typeof listLeadDocumentsApiV1AffiliatesLeadsLeadIdDocumentsGet>>>
+export type ListLeadDocumentsApiV1AffiliatesLeadsLeadIdDocumentsGetQueryError = HTTPValidationError
+
+
+export function useListLeadDocumentsApiV1AffiliatesLeadsLeadIdDocumentsGet<TData = Awaited<ReturnType<typeof listLeadDocumentsApiV1AffiliatesLeadsLeadIdDocumentsGet>>, TError = HTTPValidationError>(
+ leadId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listLeadDocumentsApiV1AffiliatesLeadsLeadIdDocumentsGet>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listLeadDocumentsApiV1AffiliatesLeadsLeadIdDocumentsGet>>,
+          TError,
+          Awaited<ReturnType<typeof listLeadDocumentsApiV1AffiliatesLeadsLeadIdDocumentsGet>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListLeadDocumentsApiV1AffiliatesLeadsLeadIdDocumentsGet<TData = Awaited<ReturnType<typeof listLeadDocumentsApiV1AffiliatesLeadsLeadIdDocumentsGet>>, TError = HTTPValidationError>(
+ leadId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listLeadDocumentsApiV1AffiliatesLeadsLeadIdDocumentsGet>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof listLeadDocumentsApiV1AffiliatesLeadsLeadIdDocumentsGet>>,
+          TError,
+          Awaited<ReturnType<typeof listLeadDocumentsApiV1AffiliatesLeadsLeadIdDocumentsGet>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListLeadDocumentsApiV1AffiliatesLeadsLeadIdDocumentsGet<TData = Awaited<ReturnType<typeof listLeadDocumentsApiV1AffiliatesLeadsLeadIdDocumentsGet>>, TError = HTTPValidationError>(
+ leadId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listLeadDocumentsApiV1AffiliatesLeadsLeadIdDocumentsGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary List Lead Documents
+ */
+
+export function useListLeadDocumentsApiV1AffiliatesLeadsLeadIdDocumentsGet<TData = Awaited<ReturnType<typeof listLeadDocumentsApiV1AffiliatesLeadsLeadIdDocumentsGet>>, TError = HTTPValidationError>(
+ leadId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listLeadDocumentsApiV1AffiliatesLeadsLeadIdDocumentsGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getListLeadDocumentsApiV1AffiliatesLeadsLeadIdDocumentsGetQueryOptions(leadId,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+
+/**
+ * Generates a time-expiring (15-minute) signed view URL for vetted internal or dealership reviewers.
+ * @summary Get Document Signed View Url
+ */
+export const getDocumentSignedViewUrlApiV1AffiliatesLeadsLeadIdDocumentsDocumentIdSignedUrlGet = (
+    leadId: string,
+    documentId: string,
+ options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<SignedViewUrlResponse>(
+      {url: `/api/v1/affiliates/leads/${leadId}/documents/${documentId}/signed-url`, method: 'GET', signal
+    },
+      options);
+    }
+  
+
+
+
+export const getGetDocumentSignedViewUrlApiV1AffiliatesLeadsLeadIdDocumentsDocumentIdSignedUrlGetQueryKey = (leadId?: string,
+    documentId?: string,) => {
+    return [
+    `/api/v1/affiliates/leads/${leadId}/documents/${documentId}/signed-url`
+    ] as const;
+    }
+
+    
+export const getGetDocumentSignedViewUrlApiV1AffiliatesLeadsLeadIdDocumentsDocumentIdSignedUrlGetQueryOptions = <TData = Awaited<ReturnType<typeof getDocumentSignedViewUrlApiV1AffiliatesLeadsLeadIdDocumentsDocumentIdSignedUrlGet>>, TError = HTTPValidationError>(leadId: string,
+    documentId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDocumentSignedViewUrlApiV1AffiliatesLeadsLeadIdDocumentsDocumentIdSignedUrlGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetDocumentSignedViewUrlApiV1AffiliatesLeadsLeadIdDocumentsDocumentIdSignedUrlGetQueryKey(leadId,documentId);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDocumentSignedViewUrlApiV1AffiliatesLeadsLeadIdDocumentsDocumentIdSignedUrlGet>>> = ({ signal }) => getDocumentSignedViewUrlApiV1AffiliatesLeadsLeadIdDocumentsDocumentIdSignedUrlGet(leadId,documentId, requestOptions, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, enabled: !!(leadId && documentId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getDocumentSignedViewUrlApiV1AffiliatesLeadsLeadIdDocumentsDocumentIdSignedUrlGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetDocumentSignedViewUrlApiV1AffiliatesLeadsLeadIdDocumentsDocumentIdSignedUrlGetQueryResult = NonNullable<Awaited<ReturnType<typeof getDocumentSignedViewUrlApiV1AffiliatesLeadsLeadIdDocumentsDocumentIdSignedUrlGet>>>
+export type GetDocumentSignedViewUrlApiV1AffiliatesLeadsLeadIdDocumentsDocumentIdSignedUrlGetQueryError = HTTPValidationError
+
+
+export function useGetDocumentSignedViewUrlApiV1AffiliatesLeadsLeadIdDocumentsDocumentIdSignedUrlGet<TData = Awaited<ReturnType<typeof getDocumentSignedViewUrlApiV1AffiliatesLeadsLeadIdDocumentsDocumentIdSignedUrlGet>>, TError = HTTPValidationError>(
+ leadId: string,
+    documentId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDocumentSignedViewUrlApiV1AffiliatesLeadsLeadIdDocumentsDocumentIdSignedUrlGet>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getDocumentSignedViewUrlApiV1AffiliatesLeadsLeadIdDocumentsDocumentIdSignedUrlGet>>,
+          TError,
+          Awaited<ReturnType<typeof getDocumentSignedViewUrlApiV1AffiliatesLeadsLeadIdDocumentsDocumentIdSignedUrlGet>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetDocumentSignedViewUrlApiV1AffiliatesLeadsLeadIdDocumentsDocumentIdSignedUrlGet<TData = Awaited<ReturnType<typeof getDocumentSignedViewUrlApiV1AffiliatesLeadsLeadIdDocumentsDocumentIdSignedUrlGet>>, TError = HTTPValidationError>(
+ leadId: string,
+    documentId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDocumentSignedViewUrlApiV1AffiliatesLeadsLeadIdDocumentsDocumentIdSignedUrlGet>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getDocumentSignedViewUrlApiV1AffiliatesLeadsLeadIdDocumentsDocumentIdSignedUrlGet>>,
+          TError,
+          Awaited<ReturnType<typeof getDocumentSignedViewUrlApiV1AffiliatesLeadsLeadIdDocumentsDocumentIdSignedUrlGet>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetDocumentSignedViewUrlApiV1AffiliatesLeadsLeadIdDocumentsDocumentIdSignedUrlGet<TData = Awaited<ReturnType<typeof getDocumentSignedViewUrlApiV1AffiliatesLeadsLeadIdDocumentsDocumentIdSignedUrlGet>>, TError = HTTPValidationError>(
+ leadId: string,
+    documentId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDocumentSignedViewUrlApiV1AffiliatesLeadsLeadIdDocumentsDocumentIdSignedUrlGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get Document Signed View Url
+ */
+
+export function useGetDocumentSignedViewUrlApiV1AffiliatesLeadsLeadIdDocumentsDocumentIdSignedUrlGet<TData = Awaited<ReturnType<typeof getDocumentSignedViewUrlApiV1AffiliatesLeadsLeadIdDocumentsDocumentIdSignedUrlGet>>, TError = HTTPValidationError>(
+ leadId: string,
+    documentId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getDocumentSignedViewUrlApiV1AffiliatesLeadsLeadIdDocumentsDocumentIdSignedUrlGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetDocumentSignedViewUrlApiV1AffiliatesLeadsLeadIdDocumentsDocumentIdSignedUrlGetQueryOptions(leadId,documentId,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+
+/**
+ * Regulatory POPIA worker: purges documents from rejected/converted applications exceeding the 90-day retention window.
+ * @summary Purge Expired Documents
+ */
+export const purgeExpiredDocumentsApiV1AffiliatesLeadsDocumentsPurgeExpiredPost = (
+    params?: PurgeExpiredDocumentsApiV1AffiliatesLeadsDocumentsPurgeExpiredPostParams,
+ options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<unknown>(
+      {url: `/api/v1/affiliates/leads/documents/purge-expired`, method: 'POST',
+        params, signal
+    },
+      options);
+    }
+  
+
+
+export const getPurgeExpiredDocumentsApiV1AffiliatesLeadsDocumentsPurgeExpiredPostMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof purgeExpiredDocumentsApiV1AffiliatesLeadsDocumentsPurgeExpiredPost>>, TError,{params?: PurgeExpiredDocumentsApiV1AffiliatesLeadsDocumentsPurgeExpiredPostParams}, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof purgeExpiredDocumentsApiV1AffiliatesLeadsDocumentsPurgeExpiredPost>>, TError,{params?: PurgeExpiredDocumentsApiV1AffiliatesLeadsDocumentsPurgeExpiredPostParams}, TContext> => {
+
+const mutationKey = ['purgeExpiredDocumentsApiV1AffiliatesLeadsDocumentsPurgeExpiredPost'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof purgeExpiredDocumentsApiV1AffiliatesLeadsDocumentsPurgeExpiredPost>>, {params?: PurgeExpiredDocumentsApiV1AffiliatesLeadsDocumentsPurgeExpiredPostParams}> = (props) => {
+          const {params} = props ?? {};
+
+          return  purgeExpiredDocumentsApiV1AffiliatesLeadsDocumentsPurgeExpiredPost(params,requestOptions)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PurgeExpiredDocumentsApiV1AffiliatesLeadsDocumentsPurgeExpiredPostMutationResult = NonNullable<Awaited<ReturnType<typeof purgeExpiredDocumentsApiV1AffiliatesLeadsDocumentsPurgeExpiredPost>>>
+    
+    export type PurgeExpiredDocumentsApiV1AffiliatesLeadsDocumentsPurgeExpiredPostMutationError = HTTPValidationError
+
+    /**
+ * @summary Purge Expired Documents
+ */
+export const usePurgeExpiredDocumentsApiV1AffiliatesLeadsDocumentsPurgeExpiredPost = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof purgeExpiredDocumentsApiV1AffiliatesLeadsDocumentsPurgeExpiredPost>>, TError,{params?: PurgeExpiredDocumentsApiV1AffiliatesLeadsDocumentsPurgeExpiredPostParams}, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof purgeExpiredDocumentsApiV1AffiliatesLeadsDocumentsPurgeExpiredPost>>,
+        TError,
+        {params?: PurgeExpiredDocumentsApiV1AffiliatesLeadsDocumentsPurgeExpiredPostParams},
+        TContext
+      > => {
+
+      const mutationOptions = getPurgeExpiredDocumentsApiV1AffiliatesLeadsDocumentsPurgeExpiredPostMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    
+/**
+ * Accepts direct client uploads in dev/test environments.
+ * @summary Mock Upload Handler
+ */
+export const mockUploadHandlerApiV1StorageMockUploadPathPut = (
+    path: string,
+ options?: SecondParameter<typeof customInstance>,) => {
+      
+      
+      return customInstance<unknown>(
+      {url: `/api/v1/storage/mock-upload/${path}`, method: 'PUT'
+    },
+      options);
+    }
+  
+
+
+export const getMockUploadHandlerApiV1StorageMockUploadPathPutMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof mockUploadHandlerApiV1StorageMockUploadPathPut>>, TError,{path: string}, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof mockUploadHandlerApiV1StorageMockUploadPathPut>>, TError,{path: string}, TContext> => {
+
+const mutationKey = ['mockUploadHandlerApiV1StorageMockUploadPathPut'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof mockUploadHandlerApiV1StorageMockUploadPathPut>>, {path: string}> = (props) => {
+          const {path} = props ?? {};
+
+          return  mockUploadHandlerApiV1StorageMockUploadPathPut(path,requestOptions)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type MockUploadHandlerApiV1StorageMockUploadPathPutMutationResult = NonNullable<Awaited<ReturnType<typeof mockUploadHandlerApiV1StorageMockUploadPathPut>>>
+    
+    export type MockUploadHandlerApiV1StorageMockUploadPathPutMutationError = HTTPValidationError
+
+    /**
+ * @summary Mock Upload Handler
+ */
+export const useMockUploadHandlerApiV1StorageMockUploadPathPut = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof mockUploadHandlerApiV1StorageMockUploadPathPut>>, TError,{path: string}, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof mockUploadHandlerApiV1StorageMockUploadPathPut>>,
+        TError,
+        {path: string},
+        TContext
+      > => {
+
+      const mutationOptions = getMockUploadHandlerApiV1StorageMockUploadPathPutMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    
+/**
+ * Mock download view endpoint for dev/test environments.
+ * @summary Mock View Handler
+ */
+export const mockViewHandlerApiV1StorageMockViewPathGet = (
+    path: string,
+ options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<unknown>(
+      {url: `/api/v1/storage/mock-view/${path}`, method: 'GET', signal
+    },
+      options);
+    }
+  
+
+
+
+export const getMockViewHandlerApiV1StorageMockViewPathGetQueryKey = (path?: string,) => {
+    return [
+    `/api/v1/storage/mock-view/${path}`
+    ] as const;
+    }
+
+    
+export const getMockViewHandlerApiV1StorageMockViewPathGetQueryOptions = <TData = Awaited<ReturnType<typeof mockViewHandlerApiV1StorageMockViewPathGet>>, TError = HTTPValidationError>(path: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof mockViewHandlerApiV1StorageMockViewPathGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getMockViewHandlerApiV1StorageMockViewPathGetQueryKey(path);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof mockViewHandlerApiV1StorageMockViewPathGet>>> = ({ signal }) => mockViewHandlerApiV1StorageMockViewPathGet(path, requestOptions, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn, enabled: !!(path), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof mockViewHandlerApiV1StorageMockViewPathGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type MockViewHandlerApiV1StorageMockViewPathGetQueryResult = NonNullable<Awaited<ReturnType<typeof mockViewHandlerApiV1StorageMockViewPathGet>>>
+export type MockViewHandlerApiV1StorageMockViewPathGetQueryError = HTTPValidationError
+
+
+export function useMockViewHandlerApiV1StorageMockViewPathGet<TData = Awaited<ReturnType<typeof mockViewHandlerApiV1StorageMockViewPathGet>>, TError = HTTPValidationError>(
+ path: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof mockViewHandlerApiV1StorageMockViewPathGet>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof mockViewHandlerApiV1StorageMockViewPathGet>>,
+          TError,
+          Awaited<ReturnType<typeof mockViewHandlerApiV1StorageMockViewPathGet>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useMockViewHandlerApiV1StorageMockViewPathGet<TData = Awaited<ReturnType<typeof mockViewHandlerApiV1StorageMockViewPathGet>>, TError = HTTPValidationError>(
+ path: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof mockViewHandlerApiV1StorageMockViewPathGet>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof mockViewHandlerApiV1StorageMockViewPathGet>>,
+          TError,
+          Awaited<ReturnType<typeof mockViewHandlerApiV1StorageMockViewPathGet>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useMockViewHandlerApiV1StorageMockViewPathGet<TData = Awaited<ReturnType<typeof mockViewHandlerApiV1StorageMockViewPathGet>>, TError = HTTPValidationError>(
+ path: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof mockViewHandlerApiV1StorageMockViewPathGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Mock View Handler
+ */
+
+export function useMockViewHandlerApiV1StorageMockViewPathGet<TData = Awaited<ReturnType<typeof mockViewHandlerApiV1StorageMockViewPathGet>>, TError = HTTPValidationError>(
+ path: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof mockViewHandlerApiV1StorageMockViewPathGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getMockViewHandlerApiV1StorageMockViewPathGetQueryOptions(path,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 

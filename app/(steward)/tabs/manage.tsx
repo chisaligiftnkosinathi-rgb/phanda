@@ -49,6 +49,13 @@ export default function ManageTab() {
       color: '#10B981',
       route: '/(steward)/payment-verification',
     },
+    {
+      title: 'Auxiliary Revenue Hub',
+      subtitle: 'Referral partnerships, Mad Cars, HostAfrica & EasyEquities',
+      icon: 'trending-up-outline',
+      color: '#0D9488',
+      route: '/(steward)/offers',
+    },
   ];
 
   return (

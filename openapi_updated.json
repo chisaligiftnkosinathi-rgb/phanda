@@ -10413,6 +10413,901 @@
         }
       }
     },
+    "/api/v1/affiliates/offers": {
+      "get": {
+        "tags": [
+          "affiliates"
+        ],
+        "summary": "List Affiliate Offers",
+        "description": "Returns active affiliate commercial offers with full payout models and pre-qualification criteria.",
+        "operationId": "list_affiliate_offers_api_v1_affiliates_offers_get",
+        "parameters": [
+          {
+            "name": "category",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by category: LOANS, FUNERAL, MEDICAL, VEHICLE, RETAIL, INVESTMENTS",
+              "title": "Category"
+            },
+            "description": "Filter by category: LOANS, FUNERAL, MEDICAL, VEHICLE, RETAIL, INVESTMENTS"
+          },
+          {
+            "name": "is_active",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "description": "Filter by active status",
+              "default": true,
+              "title": "Is Active"
+            },
+            "description": "Filter by active status"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AffiliateOfferOut"
+                  },
+                  "title": "Response List Affiliate Offers Api V1 Affiliates Offers Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/affiliates/offers/{offer_id}": {
+      "get": {
+        "tags": [
+          "affiliates"
+        ],
+        "summary": "Get Affiliate Offer",
+        "description": "Fetches a specific affiliate offer with targeting constraints and dynamic payout rules.",
+        "operationId": "get_affiliate_offer_api_v1_affiliates_offers__offer_id__get",
+        "parameters": [
+          {
+            "name": "offer_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Offer Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AffiliateOfferOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/affiliates/leads/submit": {
+      "post": {
+        "tags": [
+          "affiliates"
+        ],
+        "summary": "Submit Lead",
+        "description": "Submits a customer lead for an affiliate product:\n- Pre-qualifies against Sheet 2 rules (Income, Age, Employment, SA Citizen, Bank Account, Driver License).\n- Enforces 90-day deduplication window.\n- Tags merchant account attribution.\n- Emits immutable continuity audit event.",
+        "operationId": "submit_lead_api_v1_affiliates_leads_submit_post",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AffiliateLeadCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AffiliateLeadOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/affiliates/leads/my-leads": {
+      "get": {
+        "tags": [
+          "affiliates"
+        ],
+        "summary": "List My Leads",
+        "description": "Lists submitted affiliate leads for the authenticated merchant with conversion and payout attribution.",
+        "operationId": "list_my_leads_api_v1_affiliates_leads_my_leads_get",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AffiliateLeadOut"
+                  },
+                  "title": "Response List My Leads Api V1 Affiliates Leads My Leads Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/affiliates/postback": {
+      "post": {
+        "tags": [
+          "affiliates"
+        ],
+        "summary": "Handle Conversion Postback",
+        "description": "S2S / Webhook postback endpoint for conversion attribution:\n- Matches lead by lead_id, external_lead_id, phone, or national_id.\n- Computes merchant commission split (70% standard).\n- Emits 'commission_approved' and 'commission_paid' continuity events to credit merchant ledger.",
+        "operationId": "handle_conversion_postback_api_v1_affiliates_postback_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AffiliateConversionPostback"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AffiliateLeadOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/affiliates/click/{offer_slug}": {
+      "get": {
+        "tags": [
+          "affiliates"
+        ],
+        "summary": "Track Affiliate Click",
+        "description": "Dynamic tracking click generator:\n- Resolves offer by slug (e.g. hostafrica-cloud-domains, easyequities-invest).\n- Records an immutable AffiliateClick event with visitor IP and merchant attribution.\n- Redirects (HTTP 302) to the partner referral URL with sub_id / tracking code.",
+        "operationId": "track_affiliate_click_api_v1_affiliates_click__offer_slug__get",
+        "parameters": [
+          {
+            "name": "offer_slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Offer Slug"
+            }
+          },
+          {
+            "name": "merchant_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Merchant Profile/User ID for attribution",
+              "title": "Merchant Id"
+            },
+            "description": "Merchant Profile/User ID for attribution"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/affiliates/referral-link/{offer_slug}": {
+      "get": {
+        "tags": [
+          "affiliates"
+        ],
+        "summary": "Get Merchant Referral Link",
+        "description": "Returns the trackable proxy URL for the authenticated merchant to share via WhatsApp/SMS.",
+        "operationId": "get_merchant_referral_link_api_v1_affiliates_referral_link__offer_slug__get",
+        "parameters": [
+          {
+            "name": "offer_slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Offer Slug"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/affiliates/statements/ingest": {
+      "post": {
+        "tags": [
+          "affiliates"
+        ],
+        "summary": "Ingest Affiliate Monthly Statement",
+        "description": "Admin reconciliation endpoint for monthly affiliate reports (HOSTAFRICA, EasyEquities):\n- Records statement in affiliate_partner_statements.\n- Emits 'affiliate_statement_reconciled' continuity event.\n- Emits financial event logging platform auxiliary revenue inflow.",
+        "operationId": "ingest_affiliate_monthly_statement_api_v1_affiliates_statements_ingest_post",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AffiliateStatementIngest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AffiliateStatementOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/affiliates/leads/vehicle-inquiry": {
+      "post": {
+        "tags": [
+          "affiliates"
+        ],
+        "summary": "Submit Vehicle Funnel Inquiry",
+        "description": "Automotive Multi-Monetization Funnel Endpoint:\n1. Pre-qualifies customer against Mad Cars Dealership criteria (Income R10k+, Code B license, employed).\n2. Submits primary lead to Mad Cars Dealership (R200 CPL / R2,500 CPS).\n3. Automatically fans out to opted-in ancillary offers:\n   - Car Insurance White Label (R70 CPL)\n   - Vehicle Tracker White Label (R50 CPL)\n   - Cartrack Dashcams (R55 CPL)\n   - Motor Warranty White Label (R50 CPL)\n4. Calculates total potential qualified commission across the chain (up to R475+).\n5. Tags merchant owner attribution and emits continuity events.",
+        "operationId": "submit_vehicle_funnel_inquiry_api_v1_affiliates_leads_vehicle_inquiry_post",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VehicleFunnelLeadCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VehicleFunnelLeadOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/affiliates/leads/{lead_id}/consent": {
+      "post": {
+        "tags": [
+          "FICA & POPIA Lead Documents"
+        ],
+        "summary": "Record Popia Consent",
+        "description": "Records statutory POPIA explicit consent prior to processing credit/vehicle inquiries or documents.",
+        "operationId": "record_popia_consent_api_v1_affiliates_leads__lead_id__consent_post",
+        "parameters": [
+          {
+            "name": "lead_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Lead Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/POPIAConsentRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POPIAConsentResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/affiliates/leads/{lead_id}/documents/upload-intent": {
+      "post": {
+        "tags": [
+          "FICA & POPIA Lead Documents"
+        ],
+        "summary": "Request Document Upload Intent",
+        "description": "Issues a direct-to-storage pre-signed upload URL.\nSTRICT GATE: Blocks with 403 Forbidden if POPIA credit check consent has not been logged.",
+        "operationId": "request_document_upload_intent_api_v1_affiliates_leads__lead_id__documents_upload_intent_post",
+        "parameters": [
+          {
+            "name": "lead_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Lead Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DocumentUploadIntentRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocumentUploadIntentResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/affiliates/leads/{lead_id}/documents/{document_id}/confirm": {
+      "post": {
+        "tags": [
+          "FICA & POPIA Lead Documents"
+        ],
+        "summary": "Confirm Document Upload",
+        "description": "Confirms direct storage upload and records client-calculated SHA-256 integrity hash.",
+        "operationId": "confirm_document_upload_api_v1_affiliates_leads__lead_id__documents__document_id__confirm_post",
+        "parameters": [
+          {
+            "name": "lead_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Lead Id"
+            }
+          },
+          {
+            "name": "document_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Document Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DocumentConfirmRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LeadFICADocumentResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/affiliates/leads/{lead_id}/documents": {
+      "get": {
+        "tags": [
+          "FICA & POPIA Lead Documents"
+        ],
+        "summary": "List Lead Documents",
+        "description": "Lists uploaded FICA documents for an inquiry without exposing unauthenticated raw files.",
+        "operationId": "list_lead_documents_api_v1_affiliates_leads__lead_id__documents_get",
+        "parameters": [
+          {
+            "name": "lead_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Lead Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/LeadFICADocumentResponse"
+                  },
+                  "title": "Response List Lead Documents Api V1 Affiliates Leads  Lead Id  Documents Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/affiliates/leads/{lead_id}/documents/{document_id}/signed-url": {
+      "get": {
+        "tags": [
+          "FICA & POPIA Lead Documents"
+        ],
+        "summary": "Get Document Signed View Url",
+        "description": "Generates a time-expiring (15-minute) signed view URL for vetted internal or dealership reviewers.",
+        "operationId": "get_document_signed_view_url_api_v1_affiliates_leads__lead_id__documents__document_id__signed_url_get",
+        "parameters": [
+          {
+            "name": "lead_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Lead Id"
+            }
+          },
+          {
+            "name": "document_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Document Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SignedViewUrlResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/affiliates/leads/documents/purge-expired": {
+      "post": {
+        "tags": [
+          "FICA & POPIA Lead Documents"
+        ],
+        "summary": "Purge Expired Documents",
+        "description": "Regulatory POPIA worker: purges documents from rejected/converted applications exceeding the 90-day retention window.",
+        "operationId": "purge_expired_documents_api_v1_affiliates_leads_documents_purge_expired_post",
+        "parameters": [
+          {
+            "name": "retention_days",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 90,
+              "title": "Retention Days"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/storage/mock-upload/{path}": {
+      "put": {
+        "tags": [
+          "Storage Gateway (Dev/Testing)"
+        ],
+        "summary": "Mock Upload Handler",
+        "description": "Accepts direct client uploads in dev/test environments.",
+        "operationId": "mock_upload_handler_api_v1_storage_mock_upload__path__put",
+        "parameters": [
+          {
+            "name": "path",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Path"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/storage/mock-view/{path}": {
+      "get": {
+        "tags": [
+          "Storage Gateway (Dev/Testing)"
+        ],
+        "summary": "Mock View Handler",
+        "description": "Mock download view endpoint for dev/test environments.",
+        "operationId": "mock_view_handler_api_v1_storage_mock_view__path__get",
+        "parameters": [
+          {
+            "name": "path",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Path"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/s2s/tenant-bootstrap": {
       "post": {
         "tags": [
@@ -10722,6 +11617,780 @@
           "expires_at"
         ],
         "title": "AdvertisementOut"
+      },
+      "AffiliateConversionPostback": {
+        "properties": {
+          "offer_slug": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Offer Slug"
+          },
+          "lead_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lead Id"
+          },
+          "external_lead_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "External Lead Id"
+          },
+          "phone_number": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phone Number"
+          },
+          "national_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "National Id"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "default": "CONVERTED"
+          },
+          "gross_amount": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Gross Amount"
+          },
+          "conversion_reference": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Conversion Reference"
+          },
+          "conversion_rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Conversion Rate"
+          }
+        },
+        "type": "object",
+        "title": "AffiliateConversionPostback"
+      },
+      "AffiliateLeadCreate": {
+        "properties": {
+          "offer_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Offer Id"
+          },
+          "first_name": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "First Name"
+          },
+          "last_name": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Last Name"
+          },
+          "phone_number": {
+            "type": "string",
+            "maxLength": 30,
+            "minLength": 7,
+            "title": "Phone Number"
+          },
+          "email": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 150
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email"
+          },
+          "national_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 30
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "National Id"
+          },
+          "monthly_income": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Monthly Income"
+          },
+          "is_employed": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Is Employed"
+          },
+          "has_bank_account": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Has Bank Account"
+          },
+          "is_sa_citizen": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Is Sa Citizen"
+          },
+          "has_driver_license": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Has Driver License"
+          },
+          "age": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Age"
+          },
+          "customer_metadata": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Customer Metadata"
+          }
+        },
+        "type": "object",
+        "required": [
+          "offer_id",
+          "first_name",
+          "last_name",
+          "phone_number"
+        ],
+        "title": "AffiliateLeadCreate"
+      },
+      "AffiliateLeadOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "offer_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Offer Id"
+          },
+          "merchant_id": {
+            "type": "string",
+            "title": "Merchant Id"
+          },
+          "first_name": {
+            "type": "string",
+            "title": "First Name"
+          },
+          "last_name": {
+            "type": "string",
+            "title": "Last Name"
+          },
+          "phone_number": {
+            "type": "string",
+            "title": "Phone Number"
+          },
+          "email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email"
+          },
+          "national_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "National Id"
+          },
+          "monthly_income": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Monthly Income"
+          },
+          "is_employed": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Is Employed"
+          },
+          "has_bank_account": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Has Bank Account"
+          },
+          "is_sa_citizen": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Is Sa Citizen"
+          },
+          "has_driver_license": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Has Driver License"
+          },
+          "age": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Age"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "disqualification_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Disqualification Reason"
+          },
+          "external_lead_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "External Lead Id"
+          },
+          "gross_commission": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Gross Commission"
+          },
+          "merchant_commission": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Merchant Commission"
+          },
+          "platform_fee": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Platform Fee"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "offer_id",
+          "merchant_id",
+          "first_name",
+          "last_name",
+          "phone_number",
+          "status",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "AffiliateLeadOut"
+      },
+      "AffiliateOfferOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "slug": {
+            "type": "string",
+            "title": "Slug"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "category": {
+            "type": "string",
+            "title": "Category"
+          },
+          "client_name": {
+            "type": "string",
+            "title": "Client Name"
+          },
+          "channel": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Channel",
+            "default": "Web"
+          },
+          "payout_model": {
+            "type": "string",
+            "title": "Payout Model"
+          },
+          "base_payout": {
+            "type": "string",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Base Payout"
+          },
+          "payout_percentage": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Payout Percentage"
+          },
+          "payout_tier_rules": {
+            "anyOf": [
+              {},
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Payout Tier Rules"
+          },
+          "merchant_split_ratio": {
+            "type": "string",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Merchant Split Ratio"
+          },
+          "affiliate_base_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Affiliate Base Url"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "min_income": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Min Income"
+          },
+          "min_age": {
+            "type": "integer",
+            "title": "Min Age"
+          },
+          "max_age": {
+            "type": "integer",
+            "title": "Max Age"
+          },
+          "requires_employment": {
+            "type": "boolean",
+            "title": "Requires Employment"
+          },
+          "requires_bank_account": {
+            "type": "boolean",
+            "title": "Requires Bank Account"
+          },
+          "requires_sa_citizen": {
+            "type": "boolean",
+            "title": "Requires Sa Citizen"
+          },
+          "requires_driver_license": {
+            "type": "boolean",
+            "title": "Requires Driver License"
+          },
+          "requires_fica": {
+            "type": "boolean",
+            "title": "Requires Fica",
+            "default": false
+          },
+          "dedup_period_days": {
+            "type": "integer",
+            "title": "Dedup Period Days"
+          },
+          "is_active": {
+            "type": "boolean",
+            "title": "Is Active"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "slug",
+          "name",
+          "category",
+          "client_name",
+          "payout_model",
+          "base_payout",
+          "merchant_split_ratio",
+          "min_age",
+          "max_age",
+          "requires_employment",
+          "requires_bank_account",
+          "requires_sa_citizen",
+          "requires_driver_license",
+          "dedup_period_days",
+          "is_active"
+        ],
+        "title": "AffiliateOfferOut"
+      },
+      "AffiliateStatementIngest": {
+        "properties": {
+          "partner": {
+            "type": "string",
+            "title": "Partner",
+            "description": "e.g. HOSTAFRICA, EASYEQUITIES"
+          },
+          "reporting_period": {
+            "type": "string",
+            "title": "Reporting Period",
+            "description": "e.g. 2026-09"
+          },
+          "total_earnings": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              }
+            ],
+            "title": "Total Earnings",
+            "description": "Total statement earnings, e.g. 500.00"
+          },
+          "withdrawn_amount": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              }
+            ],
+            "title": "Withdrawn Amount",
+            "default": "0.00"
+          },
+          "total_visitors": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Total Visitors",
+            "default": 0
+          },
+          "new_signups": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "New Signups",
+            "default": 0
+          },
+          "payout_account_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Payout Account Id",
+            "description": "Receiving bank or payout account reference"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "partner",
+          "reporting_period",
+          "total_earnings"
+        ],
+        "title": "AffiliateStatementIngest"
+      },
+      "AffiliateStatementOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "partner": {
+            "type": "string",
+            "title": "Partner"
+          },
+          "reporting_period": {
+            "type": "string",
+            "title": "Reporting Period"
+          },
+          "total_earnings": {
+            "type": "string",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Total Earnings"
+          },
+          "withdrawn_amount": {
+            "type": "string",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Withdrawn Amount"
+          },
+          "total_visitors": {
+            "type": "integer",
+            "title": "Total Visitors"
+          },
+          "new_signups": {
+            "type": "integer",
+            "title": "New Signups"
+          },
+          "payout_account_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Payout Account Id"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "partner",
+          "reporting_period",
+          "total_earnings",
+          "withdrawn_amount",
+          "total_visitors",
+          "new_signups",
+          "created_at"
+        ],
+        "title": "AffiliateStatementOut"
       },
       "ApplicationState": {
         "properties": {
@@ -12823,6 +14492,107 @@
         ],
         "title": "DashboardStatsOut"
       },
+      "DocumentConfirmRequest": {
+        "properties": {
+          "sha256_checksum": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 64,
+            "title": "Sha256 Checksum",
+            "description": "SHA-256 integrity checksum calculated by client"
+          }
+        },
+        "type": "object",
+        "required": [
+          "sha256_checksum"
+        ],
+        "title": "DocumentConfirmRequest"
+      },
+      "DocumentUploadIntentRequest": {
+        "properties": {
+          "document_type": {
+            "$ref": "#/components/schemas/FICADocumentType"
+          },
+          "file_name": {
+            "type": "string",
+            "title": "File Name"
+          },
+          "file_size_bytes": {
+            "type": "integer",
+            "maximum": 15728640.0,
+            "exclusiveMinimum": 0.0,
+            "title": "File Size Bytes",
+            "description": "Max 15MB file size"
+          },
+          "mime_type": {
+            "type": "string",
+            "title": "Mime Type",
+            "description": "MIME type e.g. application/pdf, image/jpeg, image/png"
+          }
+        },
+        "type": "object",
+        "required": [
+          "document_type",
+          "file_name",
+          "file_size_bytes",
+          "mime_type"
+        ],
+        "title": "DocumentUploadIntentRequest"
+      },
+      "DocumentUploadIntentResponse": {
+        "properties": {
+          "document_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Document Id"
+          },
+          "lead_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Lead Id"
+          },
+          "document_type": {
+            "$ref": "#/components/schemas/FICADocumentType"
+          },
+          "upload_url": {
+            "type": "string",
+            "title": "Upload Url"
+          },
+          "storage_bucket": {
+            "type": "string",
+            "title": "Storage Bucket"
+          },
+          "storage_key": {
+            "type": "string",
+            "title": "Storage Key"
+          },
+          "expires_in_seconds": {
+            "type": "integer",
+            "title": "Expires In Seconds",
+            "default": 600
+          }
+        },
+        "type": "object",
+        "required": [
+          "document_id",
+          "lead_id",
+          "document_type",
+          "upload_url",
+          "storage_bucket",
+          "storage_key"
+        ],
+        "title": "DocumentUploadIntentResponse"
+      },
+      "DocumentVerificationStatus": {
+        "type": "string",
+        "enum": [
+          "PENDING",
+          "VERIFIED",
+          "REJECTED",
+          "PURGED"
+        ],
+        "title": "DocumentVerificationStatus"
+      },
       "EngagementEventCreate": {
         "properties": {
           "type": {
@@ -13088,6 +14858,17 @@
           "net_position"
         ],
         "title": "ExpenseSummaryOut"
+      },
+      "FICADocumentType": {
+        "type": "string",
+        "enum": [
+          "SA_ID_DOCUMENT",
+          "PROOF_OF_RESIDENCE",
+          "BANK_STATEMENTS_3MO",
+          "PAYSLIP_LATEST",
+          "DRIVERS_LICENSE"
+        ],
+        "title": "FICADocumentType"
       },
       "FeedbackEventCreate": {
         "properties": {
@@ -14212,6 +15993,94 @@
           "phone"
         ],
         "title": "LeadCreate"
+      },
+      "LeadFICADocumentResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "lead_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Lead Id"
+          },
+          "document_type": {
+            "$ref": "#/components/schemas/FICADocumentType"
+          },
+          "storage_bucket": {
+            "type": "string",
+            "title": "Storage Bucket"
+          },
+          "storage_key": {
+            "type": "string",
+            "title": "Storage Key"
+          },
+          "file_mime_type": {
+            "type": "string",
+            "title": "File Mime Type"
+          },
+          "file_size_bytes": {
+            "type": "integer",
+            "title": "File Size Bytes"
+          },
+          "sha256_checksum": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sha256 Checksum"
+          },
+          "verification_status": {
+            "$ref": "#/components/schemas/DocumentVerificationStatus"
+          },
+          "rejection_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rejection Reason"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "purged_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Purged At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "lead_id",
+          "document_type",
+          "storage_bucket",
+          "storage_key",
+          "file_mime_type",
+          "file_size_bytes",
+          "verification_status",
+          "created_at"
+        ],
+        "title": "LeadFICADocumentResponse"
       },
       "LeadOut": {
         "properties": {
@@ -15841,6 +17710,103 @@
           "opportunity_id"
         ],
         "title": "OrderItemInput"
+      },
+      "POPIAConsentRequest": {
+        "properties": {
+          "id_number": {
+            "type": "string",
+            "maxLength": 13,
+            "minLength": 13,
+            "title": "Id Number",
+            "description": "13-digit SA National ID number"
+          },
+          "consented_to_credit_check": {
+            "type": "boolean",
+            "title": "Consented To Credit Check",
+            "description": "Statutory consent for credit bureau evaluation",
+            "default": true
+          },
+          "consented_to_dealership_sharing": {
+            "type": "boolean",
+            "title": "Consented To Dealership Sharing",
+            "description": "Consent to share financial profile with vetted dealership",
+            "default": true
+          },
+          "consented_to_affiliate_forwarding": {
+            "type": "boolean",
+            "title": "Consented To Affiliate Forwarding",
+            "description": "Optional consent for ancillary insurance/tracker offers",
+            "default": false
+          },
+          "consent_version": {
+            "type": "string",
+            "title": "Consent Version",
+            "description": "Consent policy version",
+            "default": "POPIA-v1.0-2026"
+          },
+          "raw_consent_text": {
+            "type": "string",
+            "title": "Raw Consent Text",
+            "description": "Exact statutory text acknowledged by the applicant"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id_number",
+          "raw_consent_text"
+        ],
+        "title": "POPIAConsentRequest"
+      },
+      "POPIAConsentResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "lead_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Lead Id"
+          },
+          "id_number": {
+            "type": "string",
+            "title": "Id Number"
+          },
+          "consented_to_credit_check": {
+            "type": "boolean",
+            "title": "Consented To Credit Check"
+          },
+          "consented_to_dealership_sharing": {
+            "type": "boolean",
+            "title": "Consented To Dealership Sharing"
+          },
+          "consented_to_affiliate_forwarding": {
+            "type": "boolean",
+            "title": "Consented To Affiliate Forwarding"
+          },
+          "consent_version": {
+            "type": "string",
+            "title": "Consent Version"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "lead_id",
+          "id_number",
+          "consented_to_credit_check",
+          "consented_to_dealership_sharing",
+          "consented_to_affiliate_forwarding",
+          "consent_version",
+          "created_at"
+        ],
+        "title": "POPIAConsentResponse"
       },
       "PayfastCreatePayload": {
         "properties": {
@@ -20353,6 +22319,34 @@
         ],
         "title": "ShareResponseOut"
       },
+      "SignedViewUrlResponse": {
+        "properties": {
+          "document_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Document Id"
+          },
+          "document_type": {
+            "$ref": "#/components/schemas/FICADocumentType"
+          },
+          "signed_view_url": {
+            "type": "string",
+            "title": "Signed View Url"
+          },
+          "expires_in_seconds": {
+            "type": "integer",
+            "title": "Expires In Seconds",
+            "default": 900
+          }
+        },
+        "type": "object",
+        "required": [
+          "document_id",
+          "document_type",
+          "signed_view_url"
+        ],
+        "title": "SignedViewUrlResponse"
+      },
       "StewardAnnotationCreate": {
         "properties": {
           "target_event_id": {
@@ -21087,6 +23081,175 @@
           "type"
         ],
         "title": "ValidationError"
+      },
+      "VehicleFunnelLeadCreate": {
+        "properties": {
+          "full_name": {
+            "type": "string",
+            "maxLength": 150,
+            "minLength": 2,
+            "title": "Full Name"
+          },
+          "phone_number": {
+            "type": "string",
+            "maxLength": 30,
+            "minLength": 7,
+            "title": "Phone Number"
+          },
+          "national_id": {
+            "type": "string",
+            "maxLength": 30,
+            "minLength": 10,
+            "title": "National Id"
+          },
+          "monthly_income": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              }
+            ],
+            "title": "Monthly Income",
+            "description": "Gross monthly income in ZAR"
+          },
+          "has_valid_license": {
+            "type": "boolean",
+            "title": "Has Valid License",
+            "description": "Must have valid Code B / EB driver's license"
+          },
+          "preferred_vehicle_type": {
+            "type": "string",
+            "title": "Preferred Vehicle Type",
+            "description": "Hatchback, Sedan, Bakkie, SUV",
+            "default": "Hatchback"
+          },
+          "target_budget_range": {
+            "type": "string",
+            "title": "Target Budget Range",
+            "description": "Target monthly installment range",
+            "default": "R3,000 - R5,000/pm"
+          },
+          "email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email"
+          },
+          "age": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 75.0,
+                "minimum": 18.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Age",
+            "default": 30
+          },
+          "is_employed": {
+            "type": "boolean",
+            "title": "Is Employed",
+            "default": true
+          },
+          "has_bank_account": {
+            "type": "boolean",
+            "title": "Has Bank Account",
+            "default": true
+          },
+          "is_sa_citizen": {
+            "type": "boolean",
+            "title": "Is Sa Citizen",
+            "default": true
+          },
+          "opt_in_insurance_quote": {
+            "type": "boolean",
+            "title": "Opt In Insurance Quote",
+            "description": "Fanout to White Label Car Insurance (R70 CPL)",
+            "default": true
+          },
+          "opt_in_tracker": {
+            "type": "boolean",
+            "title": "Opt In Tracker",
+            "description": "Fanout to Vehicle Tracker (R50 CPL)",
+            "default": true
+          },
+          "opt_in_dashcam": {
+            "type": "boolean",
+            "title": "Opt In Dashcam",
+            "description": "Fanout to Cartrack Dashcam (R55 CPL)",
+            "default": false
+          },
+          "opt_in_warranty": {
+            "type": "boolean",
+            "title": "Opt In Warranty",
+            "description": "Fanout to Motor Warranty (R50 CPL)",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "full_name",
+          "phone_number",
+          "national_id",
+          "monthly_income",
+          "has_valid_license"
+        ],
+        "title": "VehicleFunnelLeadCreate",
+        "description": "Comprehensive car buyer acquisition payload:\nCaptures primary Mad Cars inquiry and triggers automated fanout to ancillary insurance & telematics."
+      },
+      "VehicleFunnelLeadOut": {
+        "properties": {
+          "primary_lead": {
+            "$ref": "#/components/schemas/AffiliateLeadOut"
+          },
+          "ancillary_leads": {
+            "items": {
+              "$ref": "#/components/schemas/AffiliateLeadOut"
+            },
+            "type": "array",
+            "title": "Ancillary Leads",
+            "default": []
+          },
+          "total_potential_commission": {
+            "type": "string",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Total Potential Commission"
+          },
+          "merchant_potential_share": {
+            "type": "string",
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "title": "Merchant Potential Share"
+          },
+          "dispatch_status": {
+            "type": "string",
+            "title": "Dispatch Status"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "primary_lead",
+          "total_potential_commission",
+          "merchant_potential_share",
+          "dispatch_status",
+          "message"
+        ],
+        "title": "VehicleFunnelLeadOut"
       },
       "VisibilityInfo": {
         "properties": {
