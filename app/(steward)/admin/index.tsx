@@ -132,6 +132,20 @@ export default function AdminDashboardScreen() {
 
                 <TouchableOpacity 
                     style={styles.actionCard} 
+                    onPress={() => router.push('/admin/treasury' as any)}
+                >
+                    <View style={styles.actionCardIcon}>
+                        <Ionicons name="wallet" size={24} color="#2A9D8F" />
+                    </View>
+                    <View style={styles.actionCardContent}>
+                        <Text style={styles.actionCardTitle}>Treasury & Revenue Governance</Text>
+                        <Text style={styles.actionCardDesc}>Monitor 10% platform fee vault, live transaction ledger, and merchant payouts.</Text>
+                    </View>
+                    <Ionicons name="chevron-forward" size={20} color={theme.colors.textMuted} />
+                </TouchableOpacity>
+
+                <TouchableOpacity 
+                    style={styles.actionCard} 
                     onPress={() => router.push('/admin/payments')}
                 >
                     <View style={styles.actionCardIcon}>

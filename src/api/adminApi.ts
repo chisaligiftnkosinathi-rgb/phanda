@@ -126,3 +126,91 @@ export async function demoteAdmin(profileId: string): Promise<void> {
         throw new Error(err.detail || 'Failed to demote admin');
     }
 }
+
+// ----------------------------------------------------------------------------
+// Treasury Dashboard Client Functions
+// ----------------------------------------------------------------------------
+export interface TreasurySummary {
+    gross_transaction_volume: number;
+    platform_fee_revenue: number;
+    treasury_vault_balance: number;
+    merchant_earnings_total: number;
+    merchant_payout_pending: number;
+    total_orders_count: number;
+    paid_orders_count: number;
+    gateway_breakdown: Record<string, { order_count: number; volume: number }>;
+    carrier_breakdown: Record<string, { shipment_count: number }>;
+}
+
+export interface TreasuryTransaction {
+    id: string;
+    order_number?: string;
+    buyer_email?: string;
+    merchant_id?: string;
+    merchant_name?: string;
+    gateway: string;
+    payment_reference?: string;
+    total_amount: number;
+    platform_fee_10pct: number;
+    merchant_earning_90pct: number;
+    currency: string;
+    status: string;
+    created_at: string;
+}
+
+export interface PayoutQueueItem {
+    merchant_id: string;
+    merchant_name: string;
+    email?: string;
+    bank_name?: string;
+    account_number?: string;
+    branch_code?: string;
+    available_balance: number;
+    pending_payouts_count: number;
+    currency: string;
+}
+
+export async function getTreasurySummary(): Promise<TreasurySummary> {
+    const headers = await getAuthHeaders();
+    const res = await fetch(`${API_URL}/api/v1/admin/treasury/summary`, { headers });
+    if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.detail || 'Failed to fetch treasury summary');
+    }
+    return res.json();
+}
+
+export async function getTreasuryTransactions(limit: number = 50, offset: number = 0): Promise<TreasuryTransaction[]> {
+    const headers = await getAuthHeaders();
+    const res = await fetch(`${API_URL}/api/v1/admin/treasury/transactions?limit=${limit}&offset=${offset}`, { headers });
+    if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.detail || 'Failed to fetch treasury transactions');
+    }
+    return res.json();
+}
+
+export async function getPayoutQueue(): Promise<PayoutQueueItem[]> {
+    const headers = await getAuthHeaders();
+    const res = await fetch(`${API_URL}/api/v1/admin/treasury/merchants/payout-queue`, { headers });
+    if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.detail || 'Failed to fetch merchant payout queue');
+    }
+    return res.json();
+}
+
+export async function settleMerchantEarnings(merchantId: string, settlementReference?: string, notes?: string): Promise<any> {
+    const headers = await getAuthHeaders();
+    const res = await fetch(`${API_URL}/api/v1/admin/treasury/merchants/${merchantId}/settle`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ settlement_reference: settlementReference, notes })
+    });
+    if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.detail || 'Failed to settle merchant earnings');
+    }
+    return res.json();
+}
+
