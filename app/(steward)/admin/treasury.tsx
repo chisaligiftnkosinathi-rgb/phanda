@@ -18,9 +18,11 @@ import {
     getTreasuryTransactions,
     getPayoutQueue,
     settleMerchantEarnings,
+    getTreasuryAnalytics,
     TreasurySummary,
     TreasuryTransaction,
-    PayoutQueueItem
+    PayoutQueueItem,
+    TreasuryAnalytics
 } from '@/api/adminApi';
 import { theme } from '@/config/theme';
 import { PageHeader } from '@/components/PageHeader';

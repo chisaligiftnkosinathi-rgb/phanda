@@ -307,6 +307,8 @@ export default function ProfileTab() {
             </ScrollView>
           </View>
         </View>
+      </Modal>
+
       {/* Merchant KYC Compliance Modal */}
       <Modal visible={kycModalVisible} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
