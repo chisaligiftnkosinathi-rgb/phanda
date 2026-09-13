@@ -15,14 +15,24 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useSession } from '@/features/auth';
-import { approvePayment, getPaymentProofs, PaymentReview, rejectPayment } from '@/api/adminApi';
+import {
+    approvePayment,
+    getPaymentProofs,
+    PaymentReview,
+    rejectPayment,
+    getMerchantKYCQueue,
+    reviewMerchantKYC,
+    MerchantKYCItem
+} from '@/api/adminApi';
 import { theme } from '@/config/theme';
 import { PageHeader } from '@/components/PageHeader';
 
 export default function AdminPaymentProofsScreen() {
     const router = useRouter();
     const { platformRole, loading: isLoadingProfile } = useSession();
+    const [activeTab, setActiveTab] = useState<'proofs' | 'kyc'>('proofs');
     const [proofs, setProofs] = useState<PaymentReview[]>([]);
+    const [kycQueue, setKycQueue] = useState<MerchantKYCItem[]>([]);
     const [loading, setLoading] = useState(true);
     const [actionLoading, setActionLoading] = useState(false);
 
@@ -30,14 +40,19 @@ export default function AdminPaymentProofsScreen() {
     const [rejectModalVisible, setRejectModalVisible] = useState(false);
     const [rejectNote, setRejectNote] = useState('');
     const [selectedProfileId, setSelectedProfileId] = useState<string | null>(null);
+    const [selectedMerchantId, setSelectedMerchantId] = useState<string | null>(null);
 
-    const loadProofs = useCallback(async () => {
+    const loadData = useCallback(async () => {
         setLoading(true);
         try {
-            const data = await getPaymentProofs('pending_review');
-            setProofs(data);
+            const [proofsData, kycData] = await Promise.all([
+                getPaymentProofs('pending_review').catch(() => []),
+                getMerchantKYCQueue().catch(() => [])
+            ]);
+            setProofs(proofsData);
+            setKycQueue(kycData);
         } catch (err: unknown) {
-            const msg = err instanceof Error ? err.message : 'Failed to load payment proofs';
+            const msg = err instanceof Error ? err.message : 'Failed to load pending queue';
             Alert.alert('Error', msg);
         } finally {
             setLoading(false);
@@ -45,27 +60,16 @@ export default function AdminPaymentProofsScreen() {
     }, []);
 
     useEffect(() => {
-        if (!isLoadingProfile && platformRole !== 'admin' && platformRole !== 'owner') {
+        if (!isLoadingProfile && platformRole !== 'admin' && platformRole !== 'owner' && platformRole !== 'supaadmin') {
             Alert.alert('Access Denied', 'You do not have permission to view this page.');
             router.replace('/tabs/home' as const);
             return;
         }
 
-        const fetchProofs = async () => {
-            try {
-                const data = await getPaymentProofs('pending_review');
-                setProofs(data);
-            } catch (err: any) {
-                Alert.alert('Error', err.message || 'Failed to load proofs');
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        if (platformRole === 'admin' || platformRole === 'owner') {
-            fetchProofs();
+        if (platformRole === 'admin' || platformRole === 'owner' || platformRole === 'supaadmin') {
+            loadData();
         }
-    }, [platformRole, isLoadingProfile]);
+    }, [platformRole, isLoadingProfile, loadData]);
 
     const handleApprove = async (profileId: string) => {
         Alert.alert(
@@ -81,7 +85,7 @@ export default function AdminPaymentProofsScreen() {
                         try {
                             await approvePayment(profileId);
                             Alert.alert("Success", "Profile activated.");
-                            await loadProofs();
+                            await loadData();
                         } catch (err: unknown) {
                             Alert.alert('Error', err instanceof Error ? err.message : 'Failed to approve');
                         } finally {
@@ -93,14 +97,47 @@ export default function AdminPaymentProofsScreen() {
         );
     };
 
+    const handleApproveKYC = async (merchantId: string) => {
+        Alert.alert(
+            "Approve Merchant KYC",
+            "Are you sure you want to approve this merchant's compliance documents? This will enable automated payout disbursements.",
+            [
+                { text: "Cancel", style: "cancel" },
+                {
+                    text: "Approve KYC",
+                    style: "default",
+                    onPress: async () => {
+                        setActionLoading(true);
+                        try {
+                            await reviewMerchantKYC(merchantId, 'approve');
+                            Alert.alert("Success", "Merchant KYC verified. Payouts enabled.");
+                            await loadData();
+                        } catch (err: unknown) {
+                            Alert.alert('Error', err instanceof Error ? err.message : 'Failed to approve KYC');
+                        } finally {
+                            setActionLoading(false);
+                        }
+                    }
+                }
+            ]
+        );
+    };
+
     const openRejectModal = (profileId: string) => {
         setSelectedProfileId(profileId);
+        setSelectedMerchantId(null);
+        setRejectNote('');
+        setRejectModalVisible(true);
+    };
+
+    const openRejectKycModal = (merchantId: string) => {
+        setSelectedMerchantId(merchantId);
+        setSelectedProfileId(null);
         setRejectNote('');
         setRejectModalVisible(true);
     };
 
     const handleReject = async () => {
-        if (!selectedProfileId) return;
         if (!rejectNote.trim()) {
             Alert.alert("Required", "Please provide a reason for rejection.");
             return;
@@ -108,10 +145,15 @@ export default function AdminPaymentProofsScreen() {
 
         setActionLoading(true);
         try {
-            await rejectPayment(selectedProfileId, rejectNote.trim());
-            Alert.alert("Success", "Profile has been rejected.");
+            if (selectedProfileId) {
+                await rejectPayment(selectedProfileId, rejectNote.trim());
+                Alert.alert("Success", "Profile setup fee rejected.");
+            } else if (selectedMerchantId) {
+                await reviewMerchantKYC(selectedMerchantId, 'reject', rejectNote.trim());
+                Alert.alert("Success", "Merchant KYC rejected.");
+            }
             setRejectModalVisible(false);
-            await loadProofs();
+            await loadData();
         } catch (err: unknown) {
             Alert.alert('Error', err instanceof Error ? err.message : 'Failed to reject');
         } finally {
@@ -122,7 +164,7 @@ export default function AdminPaymentProofsScreen() {
     if (isLoadingProfile || loading) {
         return (
             <SafeAreaView style={styles.safeArea}>
-                <PageHeader title="Payment Proofs" showBack />
+                <PageHeader title="Compliance & Proofs" showBack />
                 <ActivityIndicator size="large" color={theme.colors.navy} style={{ marginTop: 40 }} />
             </SafeAreaView>
         );
@@ -130,65 +172,177 @@ export default function AdminPaymentProofsScreen() {
 
     return (
         <SafeAreaView style={styles.safeArea}>
-            <PageHeader title="Payment Proofs" showBack />
+            <PageHeader title="Compliance & Proofs" showBack />
+
+            {/* Segmented Control */}
+            <View style={styles.segmentContainer}>
+                <TouchableOpacity
+                    style={[styles.segmentBtn, activeTab === 'proofs' && styles.segmentBtnActive]}
+                    onPress={() => setActiveTab('proofs')}
+                >
+                    <Ionicons
+                        name="receipt-outline"
+                        size={16}
+                        color={activeTab === 'proofs' ? '#FFFFFF' : '#6B7280'}
+                    />
+                    <Text style={[styles.segmentText, activeTab === 'proofs' && styles.segmentTextActive]}>
+                        Setup Proofs ({proofs.length})
+                    </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                    style={[styles.segmentBtn, activeTab === 'kyc' && styles.segmentBtnActive]}
+                    onPress={() => setActiveTab('kyc')}
+                >
+                    <Ionicons
+                        name="shield-checkmark-outline"
+                        size={16}
+                        color={activeTab === 'kyc' ? '#FFFFFF' : '#6B7280'}
+                    />
+                    <Text style={[styles.segmentText, activeTab === 'kyc' && styles.segmentTextActive]}>
+                        Merchant KYC ({kycQueue.length})
+                    </Text>
+                </TouchableOpacity>
+            </View>
 
             <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-                <Text style={styles.sectionTitle}>Pending Reviews ({proofs.length})</Text>
+                {activeTab === 'proofs' ? (
+                    <>
+                        <Text style={styles.sectionTitle}>Pending Setup Proofs ({proofs.length})</Text>
 
-                {proofs.length === 0 ? (
-                    <View style={styles.emptyState}>
-                        <Ionicons name="checkmark-done-circle-outline" size={48} color="#10B981" />
-                        <Text style={styles.emptyText}>All caught up!</Text>
-                        <Text style={styles.emptySubtext}>No pending payment proofs to review.</Text>
-                    </View>
-                ) : (
-                    proofs.map(proof => (
-                        <View key={proof.profile_id} style={styles.card}>
-                            <View style={styles.cardHeader}>
-                                <View style={styles.cardHeaderLeft}>
-                                    <Text style={styles.profileName}>{proof.name}</Text>
-                                    <Text style={styles.profileEmail}>{proof.email}</Text>
-                                    {proof.business_name && (
-                                        <Text style={styles.businessName}>Business: {proof.business_name}</Text>
-                                    )}
+                        {proofs.length === 0 ? (
+                            <View style={styles.emptyState}>
+                                <Ionicons name="checkmark-done-circle-outline" size={48} color="#10B981" />
+                                <Text style={styles.emptyText}>All caught up!</Text>
+                                <Text style={styles.emptySubtext}>No pending payment proofs to review.</Text>
+                            </View>
+                        ) : (
+                            proofs.map(proof => (
+                                <View key={proof.profile_id} style={styles.card}>
+                                    <View style={styles.cardHeader}>
+                                        <View style={styles.cardHeaderLeft}>
+                                            <Text style={styles.profileName}>{proof.name}</Text>
+                                            <Text style={styles.profileEmail}>{proof.email}</Text>
+                                            {proof.business_name && (
+                                                <Text style={styles.businessName}>Business: {proof.business_name}</Text>
+                                            )}
+                                        </View>
+                                    </View>
+
+                                    <View style={styles.proofSection}>
+                                        {proof.setup_fee_proof_url ? (
+                                            <TouchableOpacity
+                                                style={styles.viewProofBtn}
+                                                onPress={() => Linking.openURL(proof.setup_fee_proof_url!)}
+                                            >
+                                                <Ionicons name="image-outline" size={20} color={theme.colors.navy} />
+                                                <Text style={styles.viewProofText}>View Uploaded Proof</Text>
+                                            </TouchableOpacity>
+                                        ) : (
+                                            <Text style={styles.noProofText}>No file uploaded.</Text>
+                                        )}
+                                    </View>
+
+                                    <View style={styles.actionsRow}>
+                                        <TouchableOpacity
+                                            style={[styles.actionBtn, styles.rejectBtn]}
+                                            onPress={() => openRejectModal(proof.profile_id)}
+                                            disabled={actionLoading}
+                                        >
+                                            <Ionicons name="close-circle-outline" size={18} color="#EF4444" />
+                                            <Text style={styles.rejectBtnText}>Reject</Text>
+                                        </TouchableOpacity>
+
+                                        <TouchableOpacity
+                                            style={[styles.actionBtn, styles.approveBtn]}
+                                            onPress={() => handleApprove(proof.profile_id)}
+                                            disabled={actionLoading}
+                                        >
+                                            <Ionicons name="checkmark-circle-outline" size={18} color="#FFFFFF" />
+                                            <Text style={styles.approveBtnText}>Approve</Text>
+                                        </TouchableOpacity>
+                                    </View>
                                 </View>
-                            </View>
+                            ))
+                        )}
+                    </>
+                ) : (
+                    <>
+                        <Text style={styles.sectionTitle}>Merchant KYC Compliance Queue ({kycQueue.length})</Text>
 
-                            <View style={styles.proofSection}>
-                                {proof.setup_fee_proof_url ? (
-                                    <TouchableOpacity
-                                        style={styles.viewProofBtn}
-                                        onPress={() => Linking.openURL(proof.setup_fee_proof_url!)}
-                                    >
-                                        <Ionicons name="image-outline" size={20} color={theme.colors.navy} />
-                                        <Text style={styles.viewProofText}>View Uploaded Proof</Text>
-                                    </TouchableOpacity>
-                                ) : (
-                                    <Text style={styles.noProofText}>No file uploaded.</Text>
-                                )}
+                        {kycQueue.length === 0 ? (
+                            <View style={styles.emptyState}>
+                                <Ionicons name="shield-checkmark-outline" size={48} color="#10B981" />
+                                <Text style={styles.emptyText}>Compliance Verified</Text>
+                                <Text style={styles.emptySubtext}>No merchant KYC documents currently awaiting review.</Text>
                             </View>
+                        ) : (
+                            kycQueue.map(item => (
+                                <View key={item.merchant_id} style={styles.card}>
+                                    <View style={styles.cardHeader}>
+                                        <View style={styles.cardHeaderLeft}>
+                                            <Text style={styles.profileName}>{item.merchant_name}</Text>
+                                            {item.email && <Text style={styles.profileEmail}>{item.email}</Text>}
+                                            {item.business_registration_number && (
+                                                <Text style={styles.kycMetaText}>CIPC: {item.business_registration_number}</Text>
+                                            )}
+                                            {item.tax_number && (
+                                                <Text style={styles.kycMetaText}>Tax Ref: {item.tax_number}</Text>
+                                            )}
+                                        </View>
+                                        <View style={styles.statusBadge}>
+                                            <Text style={styles.statusBadgeText}>
+                                                {item.verification_status.toUpperCase()}
+                                            </Text>
+                                        </View>
+                                    </View>
 
-                            <View style={styles.actionsRow}>
-                                <TouchableOpacity
-                                    style={[styles.actionBtn, styles.rejectBtn]}
-                                    onPress={() => openRejectModal(proof.profile_id)}
-                                    disabled={actionLoading}
-                                >
-                                    <Ionicons name="close-circle-outline" size={18} color="#EF4444" />
-                                    <Text style={styles.rejectBtnText}>Reject</Text>
-                                </TouchableOpacity>
+                                    <View style={styles.proofSection}>
+                                        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, justifyContent: 'center' }}>
+                                            {item.id_document_url && (
+                                                <TouchableOpacity
+                                                    style={styles.viewProofBtn}
+                                                    onPress={() => Linking.openURL(item.id_document_url!)}
+                                                >
+                                                    <Ionicons name="person-outline" size={18} color={theme.colors.navy} />
+                                                    <Text style={styles.viewProofText}>View ID Doc</Text>
+                                                </TouchableOpacity>
+                                            )}
+                                            {item.proof_of_address_url && (
+                                                <TouchableOpacity
+                                                    style={styles.viewProofBtn}
+                                                    onPress={() => Linking.openURL(item.proof_of_address_url!)}
+                                                >
+                                                    <Ionicons name="home-outline" size={18} color={theme.colors.navy} />
+                                                    <Text style={styles.viewProofText}>Proof of Address</Text>
+                                                </TouchableOpacity>
+                                            )}
+                                        </View>
+                                    </View>
 
-                                <TouchableOpacity
-                                    style={[styles.actionBtn, styles.approveBtn]}
-                                    onPress={() => handleApprove(proof.profile_id)}
-                                    disabled={actionLoading}
-                                >
-                                    <Ionicons name="checkmark-circle-outline" size={18} color="#FFFFFF" />
-                                    <Text style={styles.approveBtnText}>Approve</Text>
-                                </TouchableOpacity>
-                            </View>
-                        </View>
-                    ))
+                                    <View style={styles.actionsRow}>
+                                        <TouchableOpacity
+                                            style={[styles.actionBtn, styles.rejectBtn]}
+                                            onPress={() => openRejectKycModal(item.merchant_id)}
+                                            disabled={actionLoading}
+                                        >
+                                            <Ionicons name="close-circle-outline" size={18} color="#EF4444" />
+                                            <Text style={styles.rejectBtnText}>Reject KYC</Text>
+                                        </TouchableOpacity>
+
+                                        <TouchableOpacity
+                                            style={[styles.actionBtn, styles.approveBtn]}
+                                            onPress={() => handleApproveKYC(item.merchant_id)}
+                                            disabled={actionLoading}
+                                        >
+                                            <Ionicons name="shield-checkmark-outline" size={18} color="#FFFFFF" />
+                                            <Text style={styles.approveBtnText}>Approve & Unlock Payouts</Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                </View>
+                            ))
+                        )}
+                    </>
                 )}
             </ScrollView>
 
@@ -265,4 +419,53 @@ const styles = StyleSheet.create({
     modalCancelText: { color: '#4B5563', fontWeight: '600', fontSize: 16 },
     modalRejectSubmitBtn: { backgroundColor: '#EF4444' },
     modalRejectText: { color: '#FFFFFF', fontWeight: '600', fontSize: 16 },
+    segmentContainer: {
+        flexDirection: 'row',
+        paddingHorizontal: 24,
+        paddingTop: 12,
+        paddingBottom: 4,
+        gap: 12,
+    },
+    segmentBtn: {
+        flex: 1,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 6,
+        paddingVertical: 10,
+        borderRadius: 12,
+        backgroundColor: '#FFFFFF',
+        borderWidth: 1,
+        borderColor: '#E5E7EB',
+    },
+    segmentBtnActive: {
+        backgroundColor: '#2A9D8F',
+        borderColor: '#2A9D8F',
+    },
+    segmentText: {
+        fontSize: 13,
+        fontWeight: '600',
+        color: '#6B7280',
+    },
+    segmentTextActive: {
+        color: '#FFFFFF',
+        fontWeight: '700',
+    },
+    kycMetaText: {
+        fontSize: 12,
+        color: '#4B5563',
+        marginTop: 2,
+    },
+    statusBadge: {
+        backgroundColor: '#FEF3C7',
+        paddingHorizontal: 10,
+        paddingVertical: 4,
+        borderRadius: 12,
+        alignSelf: 'flex-start',
+    },
+    statusBadgeText: {
+        fontSize: 11,
+        fontWeight: '700',
+        color: '#D97706',
+    },
 });

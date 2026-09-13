@@ -14,7 +14,7 @@ export enum UserRole {
   SYSTEM_CREATOR = "system_creator",
 }
 
-export type PlatformRole = "owner" | "admin" | "moderator" | "steward" | "guest";
+export type PlatformRole = "supaadmin" | "owner" | "admin" | "moderator" | "merchant" | "steward" | "buyer" | "guest";
 
 export enum PlanCode {
   FREE = "free",
