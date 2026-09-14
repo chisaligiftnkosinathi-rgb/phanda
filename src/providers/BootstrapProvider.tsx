@@ -88,8 +88,19 @@ export const BootstrapProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   if (!tokenChecked || (hasToken && isBootstrapLoading)) {
     return (
       <View style={styles.splashContainer}>
-        <ActivityIndicator size="large" color="#059669" />
-        <Text style={styles.loadingText}>Initializing iPhande...</Text>
+        <View style={styles.brandGroup}>
+          <Text style={styles.brandTitle}>iPhande</Text>
+          <Text style={styles.brandTagline}>Township Enterprise ERP & Steward Operating System</Text>
+        </View>
+
+        <View style={styles.loaderGroup}>
+          <ActivityIndicator size="small" color="#10B981" />
+          <Text style={styles.loadingText}>Connecting to Trust Ledger...</Text>
+        </View>
+
+        <View style={styles.footerGroup}>
+          <Text style={styles.footerPillars}>Visibility • Opportunity • Continuity</Text>
+        </View>
       </View>
     );
   }
@@ -97,8 +108,12 @@ export const BootstrapProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   if (isOffline) {
     return (
       <View style={styles.splashContainer}>
-        <Text style={styles.errorTitle}>Service Temporarily Unavailable</Text>
-        <Text style={styles.errorSubtitle}>Connecting to platform network...</Text>
+        <View style={styles.brandGroup}>
+          <Text style={styles.brandTitle}>iPhande</Text>
+        </View>
+        <Text style={styles.errorTitle}>Network Connection Required</Text>
+        <Text style={styles.errorSubtitle}>Attempting to reach the platform network...</Text>
+        <ActivityIndicator size="small" color="#F87171" style={{ marginTop: 24 }} />
       </View>
     );
   }
@@ -122,24 +137,61 @@ export const useBootstrap = () => useContext(BootstrapContext);
 const styles = StyleSheet.create({
   splashContainer: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#0F172A',
+    backgroundColor: '#0A0F1D',
+    paddingVertical: 64,
+    paddingHorizontal: 24,
+  },
+  brandGroup: {
+    alignItems: 'center',
+    marginTop: 80,
+  },
+  brandTitle: {
+    fontSize: 42,
+    fontWeight: '900',
+    color: '#FFFFFF',
+    letterSpacing: -1,
+  },
+  brandTagline: {
+    fontSize: 14,
+    color: '#94A3B8',
+    marginTop: 8,
+    textAlign: 'center',
+    maxWidth: 280,
+    lineHeight: 20,
+  },
+  loaderGroup: {
+    alignItems: 'center',
+    gap: 12,
   },
   loadingText: {
-    color: '#94A3B8',
-    marginTop: 16,
-    fontSize: 14,
+    color: '#64748B',
+    fontSize: 13,
     fontWeight: '500',
+    letterSpacing: 0.2,
+  },
+  footerGroup: {
+    alignItems: 'center',
+  },
+  footerPillars: {
+    color: '#475569',
+    fontSize: 12,
+    fontWeight: '600',
+    letterSpacing: 1.5,
+    textTransform: 'uppercase',
   },
   errorTitle: {
     color: '#F87171',
     fontSize: 18,
     fontWeight: '700',
+    marginTop: 32,
+    textAlign: 'center',
   },
   errorSubtitle: {
     color: '#94A3B8',
     marginTop: 8,
     fontSize: 14,
+    textAlign: 'center',
   },
 });
