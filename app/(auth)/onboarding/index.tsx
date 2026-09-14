@@ -189,7 +189,19 @@ export default function OnboardingScreen() {
                             keyboardType="phone-pad"
                             autoFocus
                         />
-                        {errorMessage ? <Text style={styles.errorText}>{errorMessage}</Text> : null}
+                        {errorMessage ? (
+                            <View style={styles.errorBanner}>
+                                <Text style={styles.errorText}>{errorMessage}</Text>
+                                {!user && (
+                                    <TouchableOpacity
+                                        style={styles.inlineAuthButton}
+                                        onPress={() => router.replace('/(auth)/auth/login')}
+                                    >
+                                        <Text style={styles.inlineAuthButtonText}>Sign In / Sign Up Now →</Text>
+                                    </TouchableOpacity>
+                                )}
+                            </View>
+                        ) : null}
                         <View style={styles.buttonRow}>
                             <TouchableOpacity style={styles.secondaryButton} onPress={prevStep} disabled={isSubmitting}>
                                 <Text style={styles.secondaryButtonText}>Back</Text>
@@ -300,12 +312,33 @@ const styles = StyleSheet.create({
     pillTextActive: {
         color: '#FFFFFF',
     },
+    errorBanner: {
+        backgroundColor: '#FEF2F2',
+        borderWidth: 1,
+        borderColor: '#FCA5A5',
+        borderRadius: 12,
+        padding: 16,
+        marginBottom: 16,
+        alignItems: 'center',
+    },
     errorText: {
         color: '#DC2626',
         fontSize: 14,
         fontWeight: '600',
-        marginBottom: 16,
+        marginBottom: 8,
         textAlign: 'center',
+    },
+    inlineAuthButton: {
+        backgroundColor: '#111827',
+        paddingVertical: 10,
+        paddingHorizontal: 18,
+        borderRadius: 8,
+        marginTop: 4,
+    },
+    inlineAuthButtonText: {
+        color: '#FFFFFF',
+        fontSize: 14,
+        fontWeight: '700',
     },
     primaryButton: {
         padding: 16,

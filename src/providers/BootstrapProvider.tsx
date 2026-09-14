@@ -64,23 +64,31 @@ export const BootstrapProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     }
   }, [bootstrapError]);
 
-  // 5. Deterministic Routing Gateway
+  // 5. Deterministic Routing Gateway: Enforce Login/Signup FIRST
   useEffect(() => {
     if (!tokenChecked) return;
 
-    const inAuthGroup = segments[0] === '(auth)';
+    const topSegment = segments[0] as string | undefined;
+    const isAuthRoute = topSegment === '(auth)' || topSegment === 'login' || topSegment === 'register';
 
-    if (!hasToken && !inAuthGroup) {
-      router.replace('/(auth)/login');
-    } else if (hasToken && bootstrapData) {
+    // Rule 1: No token? You MUST login or sign up first. Onboarding is blocked without an account.
+    if (!hasToken) {
+      if (!isAuthRoute) {
+        router.replace('/(auth)/login');
+      }
+      return;
+    }
+
+    // Rule 2: Has token, check onboarding state
+    if (hasToken && bootstrapData) {
       const profile = bootstrapData.profile;
       
       if (!profile || !profile.onboarding_completed) {
-        if (segments[0] !== 'onboarding') {
+        if (topSegment !== 'onboarding' && topSegment !== '(auth)') {
           router.replace('/onboarding');
         }
-      } else if (inAuthGroup) {
-        router.replace('/(steward)/tabs/manage');
+      } else if (isAuthRoute) {
+        router.replace('/(steward)/dashboard');
       }
     }
   }, [hasToken, tokenChecked, bootstrapData, segments]);
