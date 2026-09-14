@@ -18,50 +18,54 @@ export function getArchetypeGroups(): ArchetypeGroup[] {
       key: "services",
       title: "Services",
       label: "Services",
-      description: "Local community services.",
+      description: "Local personal and community services.",
       archetypes: [
-        { key: "hair_beauty", label: "Hair & Beauty" },
-        { key: "home_services", label: "Home Services" }
+        { key: "beauty_and_hair", label: "Hair & Beauty" },
+        { key: "home_services", label: "Home Services & Cleaning" },
+        { key: "fashion_and_clothing", label: "Fashion, Tailoring & Clothing" }
       ]
     },
     {
       key: "trades",
       title: "Trades",
       label: "Trades",
-      description: "Construction and mechanical trades.",
+      description: "Construction, repairs, and mechanical trades.",
       archetypes: [
-        { key: "construction_trades", label: "Construction & Trades" },
-        { key: "mechanic_auto", label: "Mechanic / Auto" }
+        { key: "construction_and_trades", label: "Construction & Building" },
+        { key: "mechanic_auto", label: "Mechanic & Auto Repairs" },
+        { key: "plumbing", label: "Plumbing Services" },
+        { key: "electrical", label: "Electrical Repairs" }
       ]
     },
     {
-      key: "business",
-      title: "Business",
-      label: "Business",
-      description: "Retail and food services.",
+      key: "commerce",
+      title: "Commerce & Food",
+      label: "Commerce & Food",
+      description: "Retail stores, spazas, and catering.",
       archetypes: [
-        { key: "retail_trading", label: "Retail & Trading" },
-        { key: "food_catering", label: "Food & Catering" }
+        { key: "retail_and_trading", label: "Retail & Trading (Spaza / Shop)" },
+        { key: "food_and_catering", label: "Food, Bakery & Catering" },
+        { key: "commission_based_sales", label: "Commission & Direct Sales" }
       ]
     },
     {
       key: "digital",
-      title: "Digital",
-      label: "Digital",
-      description: "Tech, education, and media.",
+      title: "Digital & Professional",
+      label: "Digital & Professional",
+      description: "Tech, education, design, and events.",
       archetypes: [
-        { key: "tech_digital", label: "Tech & Digital" },
-        { key: "education_training", label: "Education & Training" },
-        { key: "events_media", label: "Events & Media" }
+        { key: "tech_and_digital", label: "Tech, IT & Web Design" },
+        { key: "education_and_training", label: "Education, Tutoring & Training" },
+        { key: "events_and_media", label: "Events, Sound & Media Production" }
       ]
     },
     {
       key: "mobility",
-      title: "Mobility",
-      label: "Mobility",
-      description: "Transport and delivery services.",
+      title: "Mobility & Transport",
+      label: "Mobility & Transport",
+      description: "Transport, courier, and logistics.",
       archetypes: [
-        { key: "transport_delivery", label: "Transport & Delivery" }
+        { key: "transport_and_delivery", label: "Transport, Scholar & Delivery" }
       ]
     }
   ];
