@@ -3,16 +3,32 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Install build dependencies with legacy peer deps for container build
+# Install build tools for native addons if needed
+RUN apk add --no-cache python3 make g++
+
+# Install dependencies using legacy peer deps
 COPY package*.json ./
 RUN npm install --legacy-peer-deps
 
 # Copy full source
 COPY . .
 
-# Build static web export
-ENV NODE_ENV=production
+# Accept build arguments from Railway environment
+ARG EXPO_PUBLIC_API_BASE_URL=https://iphande-production.up.railway.app
+ARG EXPO_PUBLIC_DEPLOYMENT_MODE=pilot
+ARG EXPO_PUBLIC_SUPABASE_URL=https://igylucodtqosgngsoozg.supabase.co
+ARG EXPO_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlneWx1Y29kdHFvc2duZ3Nvb3pnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkyODMzNDAsImV4cCI6MjEwNDg1OTM0MH0.eu5cLfxRs_p0ivOU1NO8lf7_t62K2DWRnFSTEuDdNcQ
+
+ENV EXPO_PUBLIC_API_BASE_URL=$EXPO_PUBLIC_API_BASE_URL \
+    EXPO_PUBLIC_DEPLOYMENT_MODE=$EXPO_PUBLIC_DEPLOYMENT_MODE \
+    EXPO_PUBLIC_SUPABASE_URL=$EXPO_PUBLIC_SUPABASE_URL \
+    EXPO_PUBLIC_SUPABASE_ANON_KEY=$EXPO_PUBLIC_SUPABASE_ANON_KEY \
+    NODE_ENV=production
+
+# Validate types and architecture
 RUN npm run build
+
+# Export static web bundle
 RUN npx expo export --platform web
 
 # Production static server stage
