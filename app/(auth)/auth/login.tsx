@@ -31,12 +31,26 @@ export default function LoginScreen() {
         } catch (error: unknown) {
             console.error("Login Error:", error);
 
-            let friendlyMessage = "An unexpected error occurred. Please try again.";
-
+            let rawMsg = "";
             if (error instanceof Error) {
-                friendlyMessage = error.message;
+                rawMsg = error.message;
             } else if (typeof error === 'object' && error !== null && 'message' in error) {
-                friendlyMessage = String((error as { message: unknown }).message);
+                rawMsg = String((error as { message: unknown }).message);
+            }
+
+            let friendlyMessage = "An unexpected error occurred. Please try again.";
+            const lower = rawMsg.toLowerCase();
+
+            if (lower.includes("invalid login credentials") || lower.includes("invalid_credentials")) {
+                friendlyMessage = "No account found with this email, or the password entered is incorrect. If you haven't registered yet, please sign up.";
+            } else if (lower.includes("email not confirmed")) {
+                friendlyMessage = "Please verify your email address before signing in. Check your inbox for the confirmation link.";
+            } else if (lower.includes("user not found")) {
+                friendlyMessage = "No account found with this email address. Please click 'Sign Up' below to create your account.";
+            } else if (lower.includes("network") || lower.includes("fetch")) {
+                friendlyMessage = "Unable to connect to the authentication service. Please check your internet connection.";
+            } else if (rawMsg) {
+                friendlyMessage = rawMsg;
             }
 
             setErrorMessage(friendlyMessage);
@@ -47,8 +61,8 @@ export default function LoginScreen() {
 
     return (
         <View style={styles.container}>
-            <Text style={styles.title}>Welcome Back</Text>
-            <Text style={styles.subtitle}>Access your timeline.</Text>
+            <Text style={styles.title}>Welcome to iPhande</Text>
+            <Text style={styles.subtitle}>Township Enterprise ERP & Steward Operating System. Access your timeline, quotes, and trust ledger.</Text>
 
             <View style={styles.form}>
                 <TextInput
