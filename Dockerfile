@@ -1,5 +1,5 @@
-﻿# Multi-stage production build for phanda web on Railway
-FROM node:20-alpine AS builder
+# Multi-stage production build for phanda web on Railway
+FROM node:22-alpine AS builder
 
 WORKDIR /app
 

@@ -31,4 +31,5 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     persistSession: !isServer,
     detectSessionInUrl: false,
   },
+  realtime: isServer ? undefined : undefined,
 });
