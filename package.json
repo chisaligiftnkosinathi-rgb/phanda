@@ -12,7 +12,6 @@
     "@types/crypto-js": "^4.2.2",
     "axios": "^1.18.1",
     "base64-arraybuffer": "^1.0.2",
-    "better-sqlite3": "^12.11.1",
     "crypto-js": "^4.2.0",
     "expo": "~56.0.12",
     "expo-clipboard": "~56.0.4",

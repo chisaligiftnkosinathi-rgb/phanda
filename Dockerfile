@@ -3,12 +3,12 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Install build tools for native addons if needed
+# Install build tools for native modules if needed
 RUN apk add --no-cache python3 make g++
 
 # Install dependencies using legacy peer deps
 COPY package*.json ./
-RUN npm install --legacy-peer-deps
+RUN npm install --legacy-peer-deps --ignore-scripts
 
 # Copy full source
 COPY . .
