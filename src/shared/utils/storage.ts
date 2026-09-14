@@ -2,7 +2,7 @@ import * as SecureStore from 'expo-secure-store';
 import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const TOKEN_KEY = 'iph_auth_token';
+const TOKEN_KEY = 'phanda_auth_token';
 
 // Fallback to AsyncStorage for web since SecureStore is not supported on web
 export const storage = {
@@ -19,3 +19,8 @@ export const storage = {
     return SecureStore.deleteItemAsync(TOKEN_KEY);
   },
 };
+
+export const getStoredToken = () => storage.getToken();
+export const setStoredToken = (token: string) => storage.setToken(token);
+export const clearStoredToken = () => storage.removeToken();
+

@@ -12484,27 +12484,145 @@
         ],
         "title": "Body_upload_sale_evidence_for_quote_request_api_v1_quote_requests__quote_request_id__upload_sale_evidence_post"
       },
+      "BootstrapProfileView": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "business_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Business Name"
+          },
+          "business_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Business Type"
+          },
+          "is_verified": {
+            "type": "boolean",
+            "title": "Is Verified",
+            "default": false
+          },
+          "onboarding_completed": {
+            "type": "boolean",
+            "title": "Onboarding Completed",
+            "default": false
+          },
+          "currency": {
+            "type": "string",
+            "title": "Currency",
+            "default": "ZAR"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id"
+        ],
+        "title": "BootstrapProfileView"
+      },
       "BootstrapResponse": {
         "properties": {
+          "user_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "User Id"
+          },
+          "email": {
+            "type": "string",
+            "title": "Email"
+          },
+          "roles": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Roles"
+          },
+          "profile": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BootstrapProfileView"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "unread_notifications_count": {
+            "type": "integer",
+            "title": "Unread Notifications Count",
+            "default": 0
+          },
+          "active_cart_items_count": {
+            "type": "integer",
+            "title": "Active Cart Items Count",
+            "default": 0
+          },
+          "capabilities": {
+            "$ref": "#/components/schemas/SystemCapabilities"
+          },
           "session": {
             "title": "Session",
             "default": {}
           },
           "identity": {
-            "$ref": "#/components/schemas/IdentitySchema"
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/IdentitySchema"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "business": {
             "title": "Business",
             "default": {}
           },
           "application": {
-            "$ref": "#/components/schemas/ApplicationState"
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ApplicationState"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "setup": {
-            "$ref": "#/components/schemas/SetupState"
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SetupState"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "subscription": {
-            "$ref": "#/components/schemas/SubscriptionState"
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SubscriptionState"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "workspace": {
             "anyOf": [
@@ -12555,7 +12673,8 @@
           },
           "platformRole": {
             "type": "string",
-            "title": "Platformrole"
+            "title": "Platformrole",
+            "default": "buyer"
           },
           "dashboard": {
             "anyOf": [
@@ -12568,26 +12687,24 @@
             ]
           },
           "policy": {
-            "title": "Policy"
+            "title": "Policy",
+            "default": {}
           },
           "system": {
-            "$ref": "#/components/schemas/SystemSchema"
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SystemSchema"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "type": "object",
         "required": [
-          "identity",
-          "application",
-          "setup",
-          "subscription",
-          "businesses",
-          "selectedBusinessId",
-          "permissions",
-          "featureFlags",
-          "navigation",
-          "platformRole",
-          "policy",
-          "system"
+          "user_id",
+          "email"
         ],
         "title": "BootstrapResponse"
       },
@@ -22532,6 +22649,32 @@
           "plan"
         ],
         "title": "SubscriptionState"
+      },
+      "SystemCapabilities": {
+        "properties": {
+          "pudo_lockers_enabled": {
+            "type": "boolean",
+            "title": "Pudo Lockers Enabled",
+            "default": true
+          },
+          "payfast_enabled": {
+            "type": "boolean",
+            "title": "Payfast Enabled",
+            "default": true
+          },
+          "affiliate_hub_enabled": {
+            "type": "boolean",
+            "title": "Affiliate Hub Enabled",
+            "default": true
+          },
+          "fica_vault_enabled": {
+            "type": "boolean",
+            "title": "Fica Vault Enabled",
+            "default": true
+          }
+        },
+        "type": "object",
+        "title": "SystemCapabilities"
       },
       "SystemSchema": {
         "properties": {

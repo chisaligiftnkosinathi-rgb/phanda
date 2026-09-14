@@ -62,3 +62,8 @@ export const storage = {
     }
   },
 };
+
+export const getStoredToken = () => storage.getToken();
+export const setStoredToken = (token: string) => storage.setToken(token);
+export const clearStoredToken = () => storage.removeToken();
+

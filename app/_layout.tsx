@@ -87,12 +87,19 @@ function BootCoordinator({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+import { BootstrapProvider } from '@/providers/BootstrapProvider';
+
 export default function RootLayout() {
   return (
     <QueryClientProvider client={queryClient}>
-      <BootCoordinator>
-        <Stack screenOptions={{ headerShown: false }} />
-      </BootCoordinator>
+      <BootstrapProvider>
+        <Stack screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="(auth)" />
+          <Stack.Screen name="(steward)" />
+          <Stack.Screen name="(public)" />
+          <Stack.Screen name="onboarding" />
+        </Stack>
+      </BootstrapProvider>
     </QueryClientProvider>
   );
 }

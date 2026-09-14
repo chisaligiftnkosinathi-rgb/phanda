@@ -12,7 +12,11 @@ export const setInterceptorQueryClient = (client: QueryClient) => {
 export const setupAuthInterceptor = (apiClient: AxiosInstance) => {
   apiClient.interceptors.request.use(async (config) => {
     try {
-      const token = useAuthStore.getState().accessToken;
+      let token = useAuthStore.getState().accessToken;
+      if (!token) {
+        const { storage } = await import('@/utils/storage');
+        token = (await storage.getToken()) || undefined;
+      }
       if (token && config.headers) {
         config.headers.set('Authorization', `Bearer ${token}`);
       }

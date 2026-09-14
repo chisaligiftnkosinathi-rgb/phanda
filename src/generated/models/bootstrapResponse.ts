@@ -5,31 +5,40 @@
  * Township enterprise ERP, hyper-local marketplace, and merchant credibility infrastructure.
  * OpenAPI spec version: 0.1.0
  */
-import type { IdentitySchema } from './identitySchema';
-import type { ApplicationState } from './applicationState';
-import type { SetupState } from './setupState';
-import type { SubscriptionState } from './subscriptionState';
+import type { BootstrapResponseProfile } from './bootstrapResponseProfile';
+import type { SystemCapabilities } from './systemCapabilities';
+import type { BootstrapResponseIdentity } from './bootstrapResponseIdentity';
+import type { BootstrapResponseApplication } from './bootstrapResponseApplication';
+import type { BootstrapResponseSetup } from './bootstrapResponseSetup';
+import type { BootstrapResponseSubscription } from './bootstrapResponseSubscription';
 import type { BootstrapResponseWorkspace } from './bootstrapResponseWorkspace';
 import type { BusinessSchema } from './businessSchema';
 import type { BootstrapResponseSelectedBusinessId } from './bootstrapResponseSelectedBusinessId';
 import type { BootstrapResponseDashboard } from './bootstrapResponseDashboard';
-import type { SystemSchema } from './systemSchema';
+import type { BootstrapResponseSystem } from './bootstrapResponseSystem';
 
 export interface BootstrapResponse {
+  user_id: string;
+  email: string;
+  roles?: string[];
+  profile?: BootstrapResponseProfile;
+  unread_notifications_count?: number;
+  active_cart_items_count?: number;
+  capabilities?: SystemCapabilities;
   session?: unknown;
-  identity: IdentitySchema;
+  identity?: BootstrapResponseIdentity;
   business?: unknown;
-  application: ApplicationState;
-  setup: SetupState;
-  subscription: SubscriptionState;
+  application?: BootstrapResponseApplication;
+  setup?: BootstrapResponseSetup;
+  subscription?: BootstrapResponseSubscription;
   workspace?: BootstrapResponseWorkspace;
-  businesses: BusinessSchema[];
-  selectedBusinessId: BootstrapResponseSelectedBusinessId;
-  permissions: string[];
-  featureFlags: string[];
-  navigation: unknown[];
-  platformRole: string;
+  businesses?: BusinessSchema[];
+  selectedBusinessId?: BootstrapResponseSelectedBusinessId;
+  permissions?: string[];
+  featureFlags?: string[];
+  navigation?: unknown[];
+  platformRole?: string;
   dashboard?: BootstrapResponseDashboard;
-  policy: unknown;
-  system: SystemSchema;
+  policy?: unknown;
+  system?: BootstrapResponseSystem;
 }
