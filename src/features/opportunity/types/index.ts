@@ -11,6 +11,8 @@ export interface OpportunityIdentity {
   slug: string;
   title: string;
   description: string;
+  productType?: 'physical' | 'service' | 'digital';
+  sku?: string;
 }
 
 export type OpportunityLifecycleState =
@@ -103,6 +105,9 @@ export interface OpportunityCardViewModel {
   priceDisplay: string;
   coverImage?: string;
   isRemote: boolean;
+  productType?: 'physical' | 'service' | 'digital';
+  stockQuantity?: number;
+  sku?: string;
 }
 
 /**

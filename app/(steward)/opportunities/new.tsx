@@ -1,203 +1,349 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, ScrollView, StyleSheet, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  ActivityIndicator,
+  Alert,
+} from 'react-native';
 import { useRouter } from 'expo-router';
-import { useForm, Controller } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
+import { Ionicons } from '@expo/vector-icons';
 import { useSession } from '@/features/auth';
 import { useCreateOpportunity } from '@/features/opportunity';
 
-const createOpportunitySchema = z.object({
-  title: z.string().min(3, 'Title is required'),
-  description: z.string().optional(),
-  serviceNeeded: z.string().min(2, 'Service needed is required'),
-  contactName: z.string().min(2, 'Contact name is required'),
-  contactPhone: z.string().min(10, 'Contact phone is required'),
-  budgetAmount: z.string().optional(),
-  categoryKey: z.string().optional(),
-  // Location
-  province: z.string(),
-  townOrCity: z.string(),
-});
+const PRODUCT_CATEGORIES = [
+  'Home & Living (Furniture/Crafts)',
+  'Building & Hardware',
+  'Fashion & Apparel',
+  'Electronics & Solar',
+  'Food, Catering & Agro',
+  'General Merchandise',
+];
 
-type CreateOpportunityFormData = z.infer<typeof createOpportunitySchema>;
+const SERVICE_CATEGORIES = [
+  'Carpentry & Woodwork',
+  'Welding & Metalwork',
+  'Plumbing & Electrical',
+  'Building & Tiling',
+  'Mechanics & Automotive',
+  'Digital & Tech Services',
+];
 
 export default function NewOpportunityScreen() {
   const router = useRouter();
-  const { identity } = useSession();
+  const { identity, selectedBusiness } = useSession();
   const createMutation = useCreateOpportunity();
 
-  const {
-    control,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<CreateOpportunityFormData>({
-    resolver: zodResolver(createOpportunitySchema),
-    defaultValues: {
-      title: '',
-      description: '',
-      serviceNeeded: '',
-      contactName: '',
-      contactPhone: '',
-      budgetAmount: '',
-      categoryKey: 'GENERAL',
-      province: 'Western Cape',
-      townOrCity: 'Cape Town',
-    },
-  });
+  // Mode: Physical Product vs Craftsman Service
+  const [itemType, setItemType] = useState<'physical' | 'service'>('physical');
 
-  const onSubmit = async (data: CreateOpportunityFormData) => {
+  // Common fields
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [category, setCategory] = useState(PRODUCT_CATEGORIES[0]);
+  const [contactName, setContactName] = useState(selectedBusiness?.displayName || '');
+  const [contactPhone, setContactPhone] = useState('');
+  const [imageUrl, setImageUrl] = useState('');
+
+  // Physical Product Specifics
+  const [priceAmount, setPriceAmount] = useState('');
+  const [stockQuantity, setStockQuantity] = useState('1');
+  const [sku, setSku] = useState('');
+  const [deliveryMode, setDeliveryMode] = useState<'pickup' | 'shipping' | 'onsite'>('pickup');
+
+  // Service Specifics
+  const [priceModel, setPriceModel] = useState<'quote_required' | 'fixed'>('quote_required');
+  const [hourlyOrFixedRate, setHourlyOrFixedRate] = useState('');
+
+  const handleTypeChange = (type: 'physical' | 'service') => {
+    setItemType(type);
+    setCategory(type === 'physical' ? PRODUCT_CATEGORIES[0] : SERVICE_CATEGORIES[0]);
+    if (type === 'service') {
+      setDeliveryMode('onsite');
+    } else {
+      setDeliveryMode('pickup');
+    }
+  };
+
+  const handleSubmit = async () => {
     if (!identity?.id) {
-      Alert.alert('Authentication required', 'You must be signed in.');
+      Alert.alert('Authentication required', 'Please log in to add catalog items.');
+      return;
+    }
+    if (!title.trim()) {
+      Alert.alert('Title Required', 'Please enter an item or service title.');
       return;
     }
 
-    try {
-      const result = await createMutation.mutateAsync({
-        created_by_profile_id: identity.id,
-        title: data.title,
-        description: data.description,
-        service_needed: data.serviceNeeded,
-        contact_name: data.contactName,
-        contact_phone: data.contactPhone,
-        budget_amount: data.budgetAmount,
-        category_key: data.categoryKey || 'GENERAL',
-        province: data.province,
-        town_or_city: data.townOrCity,
-      });
+    if (itemType === 'physical' && !priceAmount.trim()) {
+      Alert.alert('Price Required', 'Please set a price in ZAR for this product.');
+      return;
+    }
 
-      // Navigate to the newly created workspace
-      router.replace(`/(steward)/opportunities/${result.id}`);
-    } catch (err: any) {
-      Alert.alert('Error', err.message || 'Failed to create opportunity');
+    const effectiveProfileId = selectedBusiness?.id || identity.id;
+
+    try {
+      const payload: any = {
+        created_by_profile_id: effectiveProfileId,
+        title: title.trim(),
+        description: description.trim() || undefined,
+        service_needed: itemType === 'physical' ? `Product: ${title}` : title,
+        contact_name: contactName.trim() || selectedBusiness?.displayName || 'Merchant',
+        contact_phone: contactPhone.trim() || '0000000000',
+        category_key: category,
+        province: 'Gauteng',
+        town_or_city: 'Johannesburg',
+        image_url_1: imageUrl.trim() || undefined,
+        product_type: itemType,
+        delivery_mode: deliveryMode,
+        price_model: itemType === 'physical' ? 'fixed' : priceModel,
+        price_amount: itemType === 'physical' ? parseFloat(priceAmount) : (priceModel === 'fixed' && hourlyOrFixedRate ? parseFloat(hourlyOrFixedRate) : undefined),
+        stock_quantity: itemType === 'physical' ? parseFloat(stockQuantity || '1') : undefined,
+        sku: sku.trim() || undefined,
+      };
+
+      const result = await createMutation.mutateAsync(payload);
+
+      Alert.alert(
+        'Success! 🎉',
+        `${itemType === 'physical' ? 'Product' : 'Service'} published to your smart store!`,
+        [
+          {
+            text: 'View in My Catalog',
+            onPress: () => router.replace('/(steward)/opportunities'),
+          },
+          {
+            text: 'View Public Store',
+            onPress: () => {
+              if (selectedBusiness?.slug) {
+                router.push(`/(public)/public/${selectedBusiness.slug}` as any);
+              } else {
+                router.replace('/(steward)/opportunities');
+              }
+            },
+          },
+        ]
+      );
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Failed to publish item.';
+      Alert.alert('Publish Error', msg);
     }
   };
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.headerTitle}>Post an Opportunity</Text>
-      <Text style={styles.headerSubtitle}>Describe what you need and let the community find you.</Text>
+      <Text style={styles.headerTitle}>Add to Your Store Catalog</Text>
+      <Text style={styles.headerSubtitle}>
+        Publish ready-to-buy physical products or advertise bookable craftsman services on your store slug.
+      </Text>
 
-      <View style={styles.formGroup}>
-        <Text style={styles.label}>Title *</Text>
-        <Controller
-          control={control}
-          name="title"
-          render={({ field: { onChange, onBlur, value } }) => (
-            <TextInput
-              style={[styles.input, errors.title && styles.inputError]}
-              onBlur={onBlur}
-              onChangeText={onChange}
-              value={value}
-              placeholder="e.g. Need a plumber for a leaking pipe"
-            />
-          )}
-        />
-        {errors.title && <Text style={styles.errorText}>{errors.title.message}</Text>}
+      {/* Dual-Mode Selector */}
+      <View style={styles.tabToggleRow}>
+        <TouchableOpacity
+          style={[styles.tabToggle, itemType === 'physical' && styles.tabToggleActive]}
+          onPress={() => handleTypeChange('physical')}
+        >
+          <Ionicons
+            name="cube"
+            size={18}
+            color={itemType === 'physical' ? '#0D9488' : '#64748B'}
+          />
+          <Text style={[styles.tabToggleText, itemType === 'physical' && styles.tabToggleTextActive]}>
+            Physical Product
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.tabToggle, itemType === 'service' && styles.tabToggleActive]}
+          onPress={() => handleTypeChange('service')}
+        >
+          <Ionicons
+            name="hammer"
+            size={18}
+            color={itemType === 'service' ? '#0D9488' : '#64748B'}
+          />
+          <Text style={[styles.tabToggleText, itemType === 'service' && styles.tabToggleTextActive]}>
+            Craftsman Service
+          </Text>
+        </TouchableOpacity>
       </View>
 
-      <View style={styles.formGroup}>
-        <Text style={styles.label}>Service Needed *</Text>
-        <Controller
-          control={control}
-          name="serviceNeeded"
-          render={({ field: { onChange, onBlur, value } }) => (
-            <TextInput
-              style={[styles.input, errors.serviceNeeded && styles.inputError]}
-              onBlur={onBlur}
-              onChangeText={onChange}
-              value={value}
-              placeholder="e.g. Plumbing"
-            />
-          )}
+      <View style={styles.card}>
+        {/* Title */}
+        <Text style={styles.label}>
+          {itemType === 'physical' ? 'Product Name *' : 'Service Title *'}
+        </Text>
+        <TextInput
+          style={styles.input}
+          placeholder={itemType === 'physical' ? 'e.g. Handcrafted Oak Coffee Table' : 'e.g. Solar Inverter Installation'}
+          placeholderTextColor="#9ca3af"
+          value={title}
+          onChangeText={setTitle}
         />
-        {errors.serviceNeeded && <Text style={styles.errorText}>{errors.serviceNeeded.message}</Text>}
-      </View>
 
-      <View style={styles.formGroup}>
-        <Text style={styles.label}>Description</Text>
-        <Controller
-          control={control}
-          name="description"
-          render={({ field: { onChange, onBlur, value } }) => (
-            <TextInput
-              style={[styles.input, styles.textArea]}
-              onBlur={onBlur}
-              onChangeText={onChange}
-              value={value}
-              multiline
-              numberOfLines={4}
-              placeholder="Describe the job in detail..."
-            />
-          )}
+        {/* Category */}
+        <Text style={styles.label}>Category</Text>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipRow}>
+          {(itemType === 'physical' ? PRODUCT_CATEGORIES : SERVICE_CATEGORIES).map((cat) => (
+            <TouchableOpacity
+              key={cat}
+              style={[styles.chip, category === cat && styles.chipActive]}
+              onPress={() => setCategory(cat)}
+            >
+              <Text style={[styles.chipText, category === cat && styles.chipTextActive]}>
+                {cat}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+
+        {/* Pricing for Physical Product */}
+        {itemType === 'physical' && (
+          <View style={styles.row}>
+            <View style={{ flex: 1, marginRight: 8 }}>
+              <Text style={styles.label}>Price (ZAR) *</Text>
+              <View style={styles.currencyInputWrap}>
+                <Text style={styles.currencyPrefix}>R</Text>
+                <TextInput
+                  style={styles.currencyInput}
+                  placeholder="1250.00"
+                  placeholderTextColor="#9ca3af"
+                  keyboardType="numeric"
+                  value={priceAmount}
+                  onChangeText={setPriceAmount}
+                />
+              </View>
+            </View>
+
+            <View style={{ flex: 1, marginLeft: 8 }}>
+              <Text style={styles.label}>Stock Quantity *</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="1"
+                placeholderTextColor="#9ca3af"
+                keyboardType="numeric"
+                value={stockQuantity}
+                onChangeText={setStockQuantity}
+              />
+            </View>
+          </View>
+        )}
+
+        {/* Pricing for Craftsman Service */}
+        {itemType === 'service' && (
+          <View style={{ marginBottom: 14 }}>
+            <Text style={styles.label}>Pricing Model</Text>
+            <View style={styles.servicePriceOptions}>
+              <TouchableOpacity
+                style={[styles.servicePriceCard, priceModel === 'quote_required' && styles.servicePriceCardActive]}
+                onPress={() => setPriceModel('quote_required')}
+              >
+                <Text style={[styles.servicePriceTitle, priceModel === 'quote_required' && styles.servicePriceTitleActive]}>
+                  📋 Quote Required
+                </Text>
+                <Text style={styles.servicePriceDesc}>Client requests custom Dignity Quote</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.servicePriceCard, priceModel === 'fixed' && styles.servicePriceCardActive]}
+                onPress={() => setPriceModel('fixed')}
+              >
+                <Text style={[styles.servicePriceTitle, priceModel === 'fixed' && styles.servicePriceTitleActive]}>
+                  🏷️ Fixed Price
+                </Text>
+                <Text style={styles.servicePriceDesc}>Fixed consultation or call-out fee</Text>
+              </TouchableOpacity>
+            </View>
+
+            {priceModel === 'fixed' && (
+              <View style={{ marginTop: 10 }}>
+                <Text style={styles.label}>Fixed Fee (ZAR)</Text>
+                <View style={styles.currencyInputWrap}>
+                  <Text style={styles.currencyPrefix}>R</Text>
+                  <TextInput
+                    style={styles.currencyInput}
+                    placeholder="450.00"
+                    placeholderTextColor="#9ca3af"
+                    keyboardType="numeric"
+                    value={hourlyOrFixedRate}
+                    onChangeText={setHourlyOrFixedRate}
+                  />
+                </View>
+              </View>
+            )}
+          </View>
+        )}
+
+        {/* Delivery / Fulfilment Mode */}
+        <Text style={styles.label}>Delivery / Fulfillment Mode</Text>
+        <View style={styles.deliveryRow}>
+          {[
+            { mode: 'pickup' as const, label: '🏬 Workshop Pickup' },
+            { mode: 'shipping' as const, label: '🚚 Courier / Delivery' },
+            { mode: 'onsite' as const, label: '🏡 Onsite at Client' },
+          ].map((d) => (
+            <TouchableOpacity
+              key={d.mode}
+              style={[styles.deliveryChip, deliveryMode === d.mode && styles.deliveryChipActive]}
+              onPress={() => setDeliveryMode(d.mode)}
+            >
+              <Text style={[styles.deliveryChipText, deliveryMode === d.mode && styles.deliveryChipTextActive]}>
+                {d.label}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        {/* Image URL */}
+        <Text style={[styles.label, { marginTop: 14 }]}>Photo / Image URL</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="https://... (photo of item or previous work)"
+          placeholderTextColor="#9ca3af"
+          value={imageUrl}
+          onChangeText={setImageUrl}
         />
-      </View>
 
-      <View style={styles.formGroup}>
-        <Text style={styles.label}>Budget Amount</Text>
-        <Controller
-          control={control}
-          name="budgetAmount"
-          render={({ field: { onChange, onBlur, value } }) => (
+        {/* Description */}
+        <Text style={styles.label}>Item Details & Description</Text>
+        <TextInput
+          style={[styles.input, { height: 80, textAlignVertical: 'top' }]}
+          placeholder="Dimensions, materials, guarantee, or service specifications..."
+          placeholderTextColor="#9ca3af"
+          multiline
+          value={description}
+          onChangeText={setDescription}
+        />
+
+        {/* SKU optional for physical goods */}
+        {itemType === 'physical' && (
+          <View>
+            <Text style={styles.label}>SKU / Product Code (Optional)</Text>
             <TextInput
               style={styles.input}
-              onBlur={onBlur}
-              onChangeText={onChange}
-              value={value}
-              placeholder="e.g. 500"
-              keyboardType="numeric"
+              placeholder="e.g. TBL-OAK-01"
+              placeholderTextColor="#9ca3af"
+              value={sku}
+              onChangeText={setSku}
             />
-          )}
-        />
+          </View>
+        )}
       </View>
 
-      <Text style={styles.sectionTitle}>Contact Information</Text>
-      <View style={styles.formGroup}>
-        <Text style={styles.label}>Contact Name *</Text>
-        <Controller
-          control={control}
-          name="contactName"
-          render={({ field: { onChange, onBlur, value } }) => (
-            <TextInput
-              style={[styles.input, errors.contactName && styles.inputError]}
-              onBlur={onBlur}
-              onChangeText={onChange}
-              value={value}
-              placeholder="Your Name"
-            />
-          )}
-        />
-        {errors.contactName && <Text style={styles.errorText}>{errors.contactName.message}</Text>}
-      </View>
-
-      <View style={styles.formGroup}>
-        <Text style={styles.label}>Contact Phone *</Text>
-        <Controller
-          control={control}
-          name="contactPhone"
-          render={({ field: { onChange, onBlur, value } }) => (
-            <TextInput
-              style={[styles.input, errors.contactPhone && styles.inputError]}
-              onBlur={onBlur}
-              onChangeText={onChange}
-              value={value}
-              placeholder="e.g. 082 123 4567"
-              keyboardType="phone-pad"
-            />
-          )}
-        />
-        {errors.contactPhone && <Text style={styles.errorText}>{errors.contactPhone.message}</Text>}
-      </View>
-
-      <TouchableOpacity 
-        style={[styles.submitButton, createMutation.isPending && styles.submitButtonDisabled]} 
-        onPress={handleSubmit(onSubmit)}
+      <TouchableOpacity
+        style={styles.submitBtn}
+        onPress={handleSubmit}
         disabled={createMutation.isPending}
       >
         {createMutation.isPending ? (
-          <ActivityIndicator color="#fff" />
+          <ActivityIndicator color="#ffffff" />
         ) : (
-          <Text style={styles.submitButtonText}>Create Workspace</Text>
+          <Text style={styles.submitBtnText}>
+            {itemType === 'physical' ? 'Publish Product to Store' : 'Publish Service to Store'}
+          </Text>
         )}
       </TouchableOpacity>
     </ScrollView>
@@ -205,18 +351,127 @@ export default function NewOpportunityScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F9FAFB' },
-  content: { padding: 24, paddingBottom: 80, maxWidth: 800, marginHorizontal: 'auto', width: '100%' },
-  headerTitle: { fontSize: 28, fontWeight: '800', color: '#111827', marginBottom: 8 },
-  headerSubtitle: { fontSize: 16, color: '#4B5563', marginBottom: 32 },
-  sectionTitle: { fontSize: 20, fontWeight: '700', color: '#111827', marginTop: 16, marginBottom: 16 },
-  formGroup: { marginBottom: 16 },
-  label: { fontSize: 14, fontWeight: '600', color: '#374151', marginBottom: 8 },
-  input: { backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#D1D5DB', borderRadius: 8, padding: 12, fontSize: 16, color: '#111827' },
-  inputError: { borderColor: '#EF4444' },
-  errorText: { color: '#EF4444', fontSize: 12, marginTop: 4 },
-  textArea: { minHeight: 100, textAlignVertical: 'top' },
-  submitButton: { backgroundColor: '#111827', padding: 16, borderRadius: 12, alignItems: 'center', marginTop: 16 },
-  submitButtonDisabled: { backgroundColor: '#9CA3AF' },
-  submitButtonText: { color: '#FFFFFF', fontSize: 16, fontWeight: '700' },
+  container: { flex: 1, backgroundColor: '#F8FAFC' },
+  content: { padding: 20, paddingBottom: 40 },
+  headerTitle: { fontSize: 24, fontWeight: '800', color: '#0F172A', marginBottom: 4 },
+  headerSubtitle: { fontSize: 13, color: '#64748B', lineHeight: 18, marginBottom: 16 },
+
+  tabToggleRow: {
+    flexDirection: 'row',
+    backgroundColor: '#F1F5F9',
+    borderRadius: 14,
+    padding: 4,
+    marginBottom: 16,
+  },
+  tabToggle: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    borderRadius: 10,
+    gap: 6,
+  },
+  tabToggleActive: {
+    backgroundColor: '#FFFFFF',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  tabToggleText: { fontSize: 13, fontWeight: '600', color: '#64748B' },
+  tabToggleTextActive: { color: '#0D9488', fontWeight: '700' },
+
+  card: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    padding: 20,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 2,
+    marginBottom: 20,
+  },
+  label: { fontSize: 13, fontWeight: '600', color: '#334155', marginBottom: 6 },
+  input: {
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#CBD5E1',
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    fontSize: 14,
+    color: '#0F172A',
+    marginBottom: 14,
+  },
+  row: { flexDirection: 'row' },
+  currencyInputWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#CBD5E1',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    marginBottom: 14,
+  },
+  currencyPrefix: { fontSize: 16, fontWeight: '700', color: '#0D9488', marginRight: 6 },
+  currencyInput: { flex: 1, paddingVertical: 12, fontSize: 15, color: '#0F172A', fontWeight: '600' },
+
+  chipRow: { flexDirection: 'row', marginBottom: 14 },
+  chip: {
+    backgroundColor: '#F1F5F9',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+    marginRight: 8,
+  },
+  chipActive: { backgroundColor: '#0D9488' },
+  chipText: { fontSize: 12, fontWeight: '600', color: '#475569' },
+  chipTextActive: { color: '#FFFFFF' },
+
+  servicePriceOptions: { flexDirection: 'row', gap: 10, marginTop: 4 },
+  servicePriceCard: {
+    flex: 1,
+    padding: 12,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: '#E2E8F0',
+    backgroundColor: '#F8FAFC',
+  },
+  servicePriceCardActive: { borderColor: '#0D9488', backgroundColor: '#F0FDFA' },
+  servicePriceTitle: { fontSize: 12, fontWeight: '700', color: '#334155', marginBottom: 2 },
+  servicePriceTitleActive: { color: '#0D9488' },
+  servicePriceDesc: { fontSize: 11, color: '#64748B' },
+
+  deliveryRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  deliveryChip: {
+    backgroundColor: '#F1F5F9',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  deliveryChipActive: { backgroundColor: '#F0FDFA', borderColor: '#0D9488' },
+  deliveryChipText: { fontSize: 12, fontWeight: '600', color: '#475569' },
+  deliveryChipTextActive: { color: '#0D9488' },
+
+  submitBtn: {
+    backgroundColor: '#0D9488',
+    paddingVertical: 16,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#0D9488',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  submitBtnText: { color: '#FFFFFF', fontSize: 15, fontWeight: '700' },
 });

@@ -1,7 +1,6 @@
 import { useEffect } from 'react';
 import { Stack, useRouter, useSegments } from 'expo-router';
-import { useAuthStore } from '@/features/auth/store/useAuthStore';
-import { useSession } from '@/features/auth/hooks/useAuth';
+import { useAuthStore, useSession } from '@/features/auth';
 
 export default function StewardLayout() {
   const router = useRouter();

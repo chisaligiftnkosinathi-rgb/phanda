@@ -13,6 +13,8 @@ export function mapToAggregate(dto: OpportunityOut): OpportunityAggregate {
       slug: dto.id, // Fallback to ID if no slug provided
       title: dto.title,
       description: dto.description as string || '',
+      productType: (dto as any).product_type || 'service',
+      sku: (dto as any).sku,
     },
     lifecycle: {
       state: lifecycleState,
@@ -22,11 +24,14 @@ export function mapToAggregate(dto: OpportunityOut): OpportunityAggregate {
     // Change the rule here; never in the UI layer.
     visibility: deriveVisibility(lifecycleState),
     pricing: {
-      estimatedValue: Number(dto.budget_amount) || 0,
+      estimatedValue: Number((dto as any).price_amount ?? dto.budget_amount) || 0,
       currency: 'ZAR',
-      pricingType: 'fixed',
+      pricingType: ((dto as any).price_model as any) || 'fixed',
     },
     capacity: {
+      availableSlots: (dto as any).stock_quantity !== undefined && (dto as any).stock_quantity !== null
+        ? Number((dto as any).stock_quantity)
+        : undefined,
       waitlistActive: false,
     },
     fulfilment: {
@@ -63,6 +68,9 @@ export function mapToCardViewModel(aggregate: OpportunityAggregate): Opportunity
     priceDisplay: `${aggregate.pricing.currency} ${aggregate.pricing.estimatedValue}`,
     coverImage: aggregate.media.coverImageUrl,
     isRemote: aggregate.fulfilment.isRemote,
+    productType: aggregate.identity.productType,
+    stockQuantity: aggregate.capacity.availableSlots,
+    sku: aggregate.identity.sku,
   };
 }
 

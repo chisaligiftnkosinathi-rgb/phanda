@@ -2,7 +2,7 @@ import React from 'react';
 import { ScrollView, View, StyleSheet, Text, Button, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useSession } from '@/features/auth/hooks/useAuth';
+import { useSession } from '@/features/auth';
 
 import { useRouter } from 'expo-router';
 
@@ -85,21 +85,47 @@ export default function HomeTab() {
           </>
         )}
 
+        {/* Storefront Card */}
+        <View style={styles.storeCard}>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.storeCardTitle}>🏪 Your Public Storefront</Text>
+            <Text style={styles.storeCardSub}>
+              {selectedBusiness?.slug
+                ? `phanda.app/public/${selectedBusiness.slug}`
+                : 'Set up your unique shop link and banking details'}
+            </Text>
+          </View>
+          <TouchableOpacity
+            style={styles.storeCardBtn}
+            onPress={() => {
+              if (selectedBusiness?.slug) {
+                router.push(`/(public)/public/${selectedBusiness.slug}` as any);
+              } else {
+                router.push('/(steward)/setup' as any);
+              }
+            }}
+          >
+            <Text style={styles.storeCardBtnText}>
+              {selectedBusiness?.slug ? 'View Store ↗' : 'Setup Shop ⚙️'}
+            </Text>
+          </TouchableOpacity>
+        </View>
+
         {/* Quick Actions */}
         <Text style={styles.sectionTitle}>Quick Actions</Text>
         <View style={styles.actionsGrid}>
           <View style={styles.actionBtn}>
             <Button
-              title="Post Service"
+              title="+ New Item"
               color="#2A9D8F"
               onPress={() => router.push('/(steward)/opportunities/new' as any)}
             />
           </View>
           <View style={styles.actionBtn}>
             <Button
-              title="Create Quote"
+              title="Catalog & Stock"
               color="#111827"
-              onPress={() => router.push('/(steward)/quotes/new' as any)}
+              onPress={() => router.push('/(steward)/opportunities' as any)}
             />
           </View>
         </View>
@@ -134,4 +160,23 @@ const styles = StyleSheet.create({
   statLabel: { fontSize: 14, color: '#6c757d' },
   actionsGrid: { flexDirection: 'row', gap: 12 },
   actionBtn: { flex: 1 },
+  storeCard: {
+    backgroundColor: '#111827',
+    borderRadius: 16,
+    padding: 18,
+    marginBottom: 24,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  storeCardTitle: { fontSize: 16, fontWeight: '800', color: '#FFFFFF', marginBottom: 4 },
+  storeCardSub: { fontSize: 12, color: '#9CA3AF' },
+  storeCardBtn: {
+    backgroundColor: '#2A9D8F',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 10,
+  },
+  storeCardBtnText: { color: '#FFFFFF', fontWeight: '800', fontSize: 12 },
 });
